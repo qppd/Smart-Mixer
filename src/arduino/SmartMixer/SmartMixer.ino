@@ -1,4 +1,4 @@
-#include "LCD CONFIG.h"
+#include "LCD_CONFIG.h"
 
 void setup() {
     Serial.begin(9600);

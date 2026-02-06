@@ -1,4 +1,4 @@
-#include "LCD CONFIG.h"
+#include "LCD_CONFIG.h"
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
 
