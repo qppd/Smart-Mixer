@@ -11,5 +11,6 @@
 extern LiquidCrystal_I2C lcd;
 
 void setupLCD();
+void testSerialLCD();
 
 #endif
