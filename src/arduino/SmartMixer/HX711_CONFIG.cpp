@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "HX711_CONFIG.h"
 
 HX711 scale;

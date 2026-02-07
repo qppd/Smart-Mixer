@@ -7,9 +7,9 @@
 void setup() {
     Serial.begin(9600);
     initLCD();
-    initDHT();
-    initLOADCELL();
-    initRELAY();
+    //initDHT();
+    //initLOADCELL();
+    //initRELAY();
 
     setLCDText("System Ready", 0, 0);
     Serial.println("Smart Mixer System Ready");

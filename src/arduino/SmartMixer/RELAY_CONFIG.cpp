@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "RELAY_CONFIG.h"
 
 //-----------------------------------------------------------------
@@ -11,21 +12,21 @@ void initRELAY(){
 //-----------------------------------------------------------------
 //FUNCTION FOR OPERATING RELAY-------------------------------------
 //-----------------------------------------------------------------
-void operateRELAY(uint16_t RELAY, boolean OPENED) {
+void operateRELAY(int RELAY, bool OPENED) {
   operateRelay(RELAY, OPENED, false);
 }
 
 //-----------------------------------------------------------------
 //FUNCTION FOR OPERATING SOLID STATE RELAY-------------------------
 //-----------------------------------------------------------------
-void operateSSR(uint16_t RELAY, boolean OPENED) {
+void operateSSR(int RELAY, bool OPENED) {
   operateRelay(RELAY, OPENED, true);
 }
 
 //-----------------------------------------------------------------
 //UNIFIED RELAY OPERATION FUNCTION---------------------------------
 //-----------------------------------------------------------------
-void operateRelay(uint16_t RELAY, boolean OPENED, boolean isSSR) {
+void operateRelay(int RELAY, bool OPENED, bool isSSR) {
   if (isSSR) {
     if (OPENED)
       digitalWrite(RELAY, HIGH);

@@ -13,14 +13,14 @@ void initRELAY();
 //-----------------------------------------------------------------
 //FUNCTION FOR OPERATING RELAY-------------------------------------
 //-----------------------------------------------------------------
-void operateRELAY(uint16_t RELAY, boolean OPENED);
+void operateRELAY(int RELAY, bool OPENED);
 
 //-----------------------------------------------------------------
 //FUNCTION FOR OPERATING SOLID STATE RELAY-------------------------
 //-----------------------------------------------------------------
-void operateSSR(uint16_t RELAY, boolean OPENED);
+void operateSSR(int RELAY, bool OPENED);
 
 // Unified relay operation function
-void operateRelay(uint16_t RELAY, boolean OPENED, boolean isSSR);
+void operateRelay(int RELAY, bool OPENED, bool isSSR);
 
 #endif
