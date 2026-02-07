@@ -20,13 +20,10 @@ void setup() {
     setLCDText("System Ready", 0, 0);
     Serial.println("Smart Mixer System Ready");
     Serial.println("Available commands:");
-    Serial.println("get-temp, get-hum, relay1_on, relay1_off");
-    Serial.println("relay2_on, relay2_off, get-ph, get-weight");
+    Serial.println("get-temp (toggle continuous), get-hum (toggle continuous)");
+    Serial.println("get-ph (toggle continuous), get-weight (toggle continuous)");
+    Serial.println("relay1_on, relay1_off, relay2_on, relay2_off");
     Serial.println("set-lcd:<text>, stop");
-    Serial.println("start-temp-continuous, stop-temp-continuous");
-    Serial.println("start-hum-continuous, stop-hum-continuous");
-    Serial.println("start-ph-continuous, stop-ph-continuous");
-    Serial.println("start-weight-continuous, stop-weight-continuous");
 }
 
 void loop() {
@@ -123,18 +120,34 @@ void loop() {
 
         // Process other commands and show results
         else if (command == "get-temp") {
+            continuousTemp = !continuousTemp; // Toggle continuous mode
+            if (continuousTemp) {
+                Serial.println("Temperature continuous monitoring started");
+                setLCDText("Temp Cont: ON", 0, 0);
+            } else {
+                Serial.println("Temperature continuous monitoring stopped");
+                setLCDText("Temp Cont: OFF", 0, 0);
+            }
+            // Also show current reading
             float temp = getDHTTemperature(false);
-            Serial.print("Temperature: ");
+            Serial.print("Current Temp: ");
             Serial.print(temp);
             Serial.println(" °C");
-            setLCDText("Temp: " + String(temp) + "C", 0, 0);
         }
         else if (command == "get-hum") {
+            continuousHum = !continuousHum; // Toggle continuous mode
+            if (continuousHum) {
+                Serial.println("Humidity continuous monitoring started");
+                setLCDText("Hum Cont: ON", 0, 1);
+            } else {
+                Serial.println("Humidity continuous monitoring stopped");
+                setLCDText("Hum Cont: OFF", 0, 1);
+            }
+            // Also show current reading
             float hum = getDHTHumidity();
-            Serial.print("Humidity: ");
+            Serial.print("Current Hum: ");
             Serial.print(hum);
             Serial.println(" %");
-            setLCDText("Hum: " + String(hum) + "%", 0, 1);
         }
         else if (command == "relay1_on") {
             operateRELAY(RELAY_1, true);
@@ -157,17 +170,33 @@ void loop() {
             setLCDText("Relay2: OFF", 0, 1);
         }
         else if (command == "get-ph") {
+            continuousPH = !continuousPH; // Toggle continuous mode
+            if (continuousPH) {
+                Serial.println("pH continuous monitoring started");
+                setLCDText("pH Cont: ON", 0, 0);
+            } else {
+                Serial.println("pH continuous monitoring stopped");
+                setLCDText("pH Cont: OFF", 0, 0);
+            }
+            // Also show current reading
             float ph = getPHValue();
-            Serial.print("pH: ");
+            Serial.print("Current pH: ");
             Serial.println(ph);
-            setLCDText("pH: " + String(ph), 0, 0);
         }
         else if (command == "get-weight") {
+            continuousWeight = !continuousWeight; // Toggle continuous mode
+            if (continuousWeight) {
+                Serial.println("Weight continuous monitoring started");
+                setLCDText("Weight Cont: ON", 0, 1);
+            } else {
+                Serial.println("Weight continuous monitoring stopped");
+                setLCDText("Weight Cont: OFF", 0, 1);
+            }
+            // Also show current reading
             float weight = getLOADCELLWeight();
-            Serial.print("Weight: ");
+            Serial.print("Current Weight: ");
             Serial.print(weight);
             Serial.println(" units");
-            setLCDText("Weight: " + String(weight), 0, 1);
         }
         else if (command.startsWith("set-lcd:")) {
             String text = command.substring(8); // Remove "set-lcd:"
