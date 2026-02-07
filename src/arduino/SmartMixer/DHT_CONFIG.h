@@ -3,6 +3,7 @@
 
 #include "PINS_CONFIG.h"
 #include "DHT.h"
+#include "CALIBRATION_CONFIG.h"
 
 // DHT sensor configuration
 #define DHTTYPE DHT22  // DHT 22 (AM2302), AM2321

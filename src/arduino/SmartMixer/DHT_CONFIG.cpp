@@ -17,7 +17,7 @@ float getDHTTemperature(boolean isFarenheit) {
     temperature = dht.readTemperature();
   }
   if (isnan(temperature)) return -1;
-  else return temperature;
+  else return temperature + DHT_TEMP_OFFSET;  // Apply calibration offset
 }
 
 /*
@@ -26,5 +26,5 @@ float getDHTTemperature(boolean isFarenheit) {
 float getDHTHumidity() {
   float humidity = dht.readHumidity();
   if (isnan(humidity)) return -1;
-  else return humidity;
+  else return humidity + DHT_HUMIDITY_OFFSET;  // Apply calibration offset
 }
