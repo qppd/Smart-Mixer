@@ -10,7 +10,23 @@
 
 extern LiquidCrystal_I2C lcd;
 
-void setupLCD();
-void testSerialLCD();
+//-----------------------------------------------------------------
+//FUNCTION FOR INITIALIZING I2C LCD--------------------------------
+//-----------------------------------------------------------------
+void initLCD();
+
+//-----------------------------------------------------------------
+//FUNCTION FOR CLEARING MESSAGE FROM I2C LCD-----------------------
+//-----------------------------------------------------------------
+void clearLCD();
+
+//-----------------------------------------------------------------
+//FUNCTION FOR SETTING MESSAGE I2C LCD----------------------------
+//-----------------------------------------------------------------
+void setLCDText(String text, int x, int y);
+void setLCDText(double value, int x, int y);
+void setLCDText(float value, int x, int y);
+void setLCDText(int value, int x, int y);
+void setLCDText(char text, int x, int y);
 
 #endif

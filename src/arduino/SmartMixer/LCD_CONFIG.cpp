@@ -2,24 +2,41 @@
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
 
-void setupLCD() {
-    lcd.init();
-    lcd.backlight();
-    lcd.print("LCD Ready");
+//-----------------------------------------------------------------
+//FUNCTION FOR INITIALIZING I2C LCD--------------------------------
+//-----------------------------------------------------------------
+void initLCD(){
+  lcd.init();
+  lcd.backlight();
 }
 
-void testSerialLCD() {
-    if (Serial.available()) {
-        String command = Serial.readStringUntil('\n');
-        command.trim(); // Remove any trailing newline
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        if (command.length() <= 16) {
-            lcd.print(command);
-        } else {
-            lcd.print(command.substring(0, 16));
-            lcd.setCursor(0, 1);
-            lcd.print(command.substring(16));
-        }
-    }
+//-----------------------------------------------------------------
+//FUNCTION FOR CLEARING MESSAGE FROM I2C LCD-----------------------
+//-----------------------------------------------------------------
+void clearLCD(){
+  lcd.clear();
+}
+
+//-----------------------------------------------------------------
+//FUNCTION FOR SETTING MESSAGE I2C LCD----------------------------
+//-----------------------------------------------------------------
+void setLCDText(String text, int x, int y) {
+  lcd.setCursor(x, y);
+  lcd.print(text);
+}
+void setLCDText(double value, int x, int y) {
+  lcd.setCursor(x, y);
+  lcd.print(value);
+}
+void setLCDText(float value, int x, int y) {
+  lcd.setCursor(x, y);
+  lcd.print(value);
+}
+void setLCDText(int value, int x, int y) {
+  lcd.setCursor(x, y);
+  lcd.print(value);
+}
+void setLCDText(char text, int x, int y) {
+  lcd.setCursor(x, y);
+  lcd.print(text);
 }

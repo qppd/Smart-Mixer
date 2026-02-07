@@ -2,9 +2,9 @@
 
 void setup() {
     Serial.begin(9600);
-    setupLCD();
+    initLCD();
 }
 
 void loop() {
-    testSerialLCD();
+    // Main loop
 }
