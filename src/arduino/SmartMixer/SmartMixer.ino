@@ -2,6 +2,7 @@
 #include "LCD_CONFIG.h"
 #include "RELAY_CONFIG.h"
 #include "HX711_CONFIG.h"
+#include "PH_CONFIG.h"
 
 void setup() {
   Serial.begin(9600);
@@ -19,6 +20,9 @@ void loop() {
   Serial.print(" --- ");
   Serial.print("Weight: ");
   Serial.print(getLOADCELLWeight());
+  Serial.print(" --- ");
+  Serial.print("pH: ");
+  Serial.print(getPHValue());
   Serial.println(" --- ");
   // setLCDText("Temp: ", 0, 0);
   // setLCDText(getDHTTemperature(false), 6, 0);
@@ -35,6 +39,9 @@ void loop() {
   Serial.print(" --- ");
   Serial.print("Weight: ");
   Serial.print(getLOADCELLWeight());
+  Serial.print(" --- ");
+  Serial.print("pH: ");
+  Serial.print(getPHValue());
   Serial.println(" --- ");
   // setLCDText("Temp: ", 0, 0);
   // setLCDText(getDHTTemperature(false), 6, 0);
