@@ -1,13 +1,15 @@
-# Smart Mixer 🍹
+# Egg Shell Fertilizer Mixer 🌱
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Arduino](https://img.shields.io/badge/Arduino-1.8.19%2B-blue)](https://www.arduino.cc/)
 
-A comprehensive IoT-enabled smart mixing system built with Arduino, featuring real-time monitoring of temperature, weight, and pH levels with automated control capabilities.
+An automated Arduino-based fertilizer production system that mixes egg shell powder and vinegar, with intelligent control based on real-time temperature and pH monitoring to create optimal calcium acetate fertilizer.
 
 ## 📋 Table of Contents
 
+- [About](#-about)
 - [Features](#-features)
+- [How It Works](#-how-it-works)
 - [Hardware Requirements](#-hardware-requirements)
 - [Software Requirements](#-software-requirements)
 - [Installation](#-installation)
@@ -19,7 +21,19 @@ A comprehensive IoT-enabled smart mixing system built with Arduino, featuring re
 - [License](#-license)
 - [Author](#-author)
 
+## 🌱 About
+
+This project automates the production of organic calcium acetate fertilizer by mixing crushed egg shells (calcium carbonate) with vinegar (acetic acid). The system monitors temperature and pH levels in real-time to ensure optimal reaction conditions and automatically controls mixing operations.
+
+**Chemical Reaction**: CaCO₃ (egg shells) + 2CH₃COOH (vinegar) → Ca(CH₃COO)₂ (calcium acetate) + H₂O + CO₂
+
 ## ✨ Features
+
+### 🔬 Automated Fertilizer Production
+- **Intelligent Mixing**: Automated control based on pH and temperature thresholds
+- **Reaction Monitoring**: Real-time tracking of chemical reaction progress
+- **Optimal Conditions**: Maintains ideal temperature range for calcium acetate formation
+- **pH-Based Control**: Stops mixing when target pH is achieved
 
 ### 🔍 Real-time Monitoring
 - **Temperature Sensing**: DHT22 sensor for accurate temperature readings
@@ -36,6 +50,22 @@ A comprehensive IoT-enabled smart mixing system built with Arduino, featuring re
 - **Modular Design**: Separate configuration files for each component
 - **Centralized Pin Management**: All hardware pins defined in one location
 - **Extensible Codebase**: Easy to add new sensors or actuators
+
+## ⚗️ How It Works
+
+### Fertilizer Production Process
+1. **Ingredient Preparation**: Egg shells are crushed into powder, vinegar is measured
+2. **Automated Mixing**: System starts mixing when ingredients are added
+3. **Reaction Monitoring**: Temperature and pH are continuously monitored
+4. **Optimal Conditions**: Mixing speed adjusts based on sensor readings
+5. **Completion Detection**: Process stops when target pH (4.5-5.5) is reached
+6. **Safety Controls**: System prevents overheating or unsafe pH levels
+
+### Control Logic
+- **Temperature Range**: 20-30°C optimal for reaction
+- **pH Target**: 4.5-5.5 for calcium acetate formation
+- **Mixing Control**: Relays activate motors/pumps based on conditions
+- **Safety Shutdown**: Automatic stop if parameters exceed safe limits
 
 ## 🔧 Hardware Requirements
 
@@ -99,32 +129,45 @@ Install via Arduino Library Manager:
 
 ## 📖 Usage
 
-### Basic Operation
-1. Power on the Arduino
-2. Open Serial Monitor (9600 baud)
-3. View real-time sensor data
-4. Control relays programmatically
+### Fertilizer Production Process
+1. **Setup Equipment**: Connect sensors and load mixing container on scale
+2. **Power On System**: Arduino initializes all sensors and displays startup message
+3. **Add Ingredients**: Place crushed egg shells and measured vinegar in container
+4. **Start Mixing**: System begins monitoring and controls mixing automatically
+5. **Monitor Progress**: View real-time temperature, weight, and pH on Serial Monitor
+6. **Automatic Completion**: System stops when optimal pH is reached
 
 ### Serial Output Format
 ```
-Temperature: 25.50 --- Weight: 150.25 --- pH: 7.20 ---
+Temperature: 25.50 --- Weight: 150.25 --- pH: 4.80 ---
 ```
 
-### Relay Control Examples
+### Production Parameters
+- **Optimal Temperature**: 20-30°C for reaction efficiency
+- **Target pH Range**: 4.5-5.5 for calcium acetate formation
+- **Mixing Duration**: Variable based on ingredient ratios and conditions
+- **Safety Limits**: Automatic shutdown if temperature > 35°C or pH < 4.0
+
+### Control Examples
 ```cpp
-// Turn on regular relay
+// Start mixing motor (regular relay)
 operateRELAY(RELAY_1, true);
 
-// Turn off solid-state relay
-operateSSR(RELAY_2, false);
+// Activate vinegar pump (solid-state relay)
+operateSSR(RELAY_2, true);
+
+// Check if reaction is complete
+if (getPHValue() >= 4.5 && getPHValue() <= 5.5) {
+    operateRELAY(RELAY_1, false); // Stop mixing
+}
 ```
 
 ### LCD Display (Optional)
 Uncomment LCD initialization in `setup()`:
 ```cpp
 initLCD();
-setLCDText("Temp: ", 0, 0);
-setLCDText(getDHTTemperature(false), 6, 0);
+setLCDText("Fertilizer", 0, 0);
+setLCDText("Production", 0, 1);
 ```
 
 ## 📁 Project Structure
@@ -157,23 +200,32 @@ Smart-Mixer/
 
 ## ⚙️ Configuration
 
+### Fertilizer Production Parameters
+- **Target pH Range**: 4.5-5.5 (optimal for calcium acetate)
+- **Optimal Temperature**: 20-30°C (reaction efficiency)
+- **Safety Limits**: Max 35°C, Min pH 4.0
+- **Mixing Ratios**: 1:2 egg shell powder to vinegar (adjustable)
+
 ### Calibration Values
 - **HX711 Scale Factor**: `22500.3f` (adjust for your load cell)
-- **pH Calibration**: `21.34` (calibrate with known pH solutions)
+- **pH Calibration**: `21.34` (calibrate with pH 4.0 and 7.0 buffers)
 
 ### Pin Customization
 Edit `PINS_CONFIG.h` to modify hardware connections:
 ```cpp
-#define DHT_PIN 2
-#define HX711_DT 25
-#define RELAY_1 22
-// ... etc
+#define DHT_PIN 2          // Temperature sensor
+#define HX711_DT 25        // Load cell data
+#define HX711_SCK 23       // Load cell clock
+#define PH_PIN A0          // pH sensor analog input
+#define RELAY_1 22         // Mixing motor relay
+#define RELAY_2 23         // Pump/valve relay
 ```
 
 ### Sensor Parameters
 - **DHT Type**: Currently set to DHT22 (configurable)
-- **pH Sampling**: 10 readings with median filtering
-- **Weight Averaging**: 10-sample moving average
+- **pH Sampling**: 10 readings with median filtering for noise reduction
+- **Weight Averaging**: 10-sample moving average for stability
+- **Temperature Units**: Celsius (configurable to Fahrenheit)
 
 ## 📚 API Reference
 
