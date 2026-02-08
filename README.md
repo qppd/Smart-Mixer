@@ -251,17 +251,14 @@ Smart-Mixer/
             ├── PH_CONFIG.h/.cpp        # pH sensor
             ├── LCD_CONFIG.h/.cpp       # LCD display
             └── RELAY_CONFIG.h/.cpp     # Relay control
+               ├── SD_CONFIG.h/.cpp        # SD card logging
+               ├── BUTTON_CONFIG.h/.cpp    # 3-button input handling
 ```
 
 ### File Descriptions
 
-- **`SmartMixer.ino`**: Main program loop and initialization
-- **`PINS_CONFIG.h`**: Centralized hardware pin configuration
-- **`DHT_CONFIG.*`**: Temperature and humidity sensing
-- **`HX711_CONFIG.*`**: Weight measurement system
-- **`PH_CONFIG.*`**: pH level monitoring with noise filtering
-- **`LCD_CONFIG.*`**: I2C LCD display interface
-- **`RELAY_CONFIG.*`**: Dual relay control system
+ - **`SD_CONFIG.*`**: SD card logging and storage
+ - **`BUTTON_CONFIG.*`**: Three-button input handling with debounce
 
 ## ⚙️ Configuration
 
@@ -283,7 +280,10 @@ Edit `PINS_CONFIG.h` to modify hardware connections:
 #define HX711_DT 25        // Load cell data
 #define HX711_SCK 23       // Load cell clock
 #define PH_PIN A0          // pH sensor analog input
-#define BUTTON_PIN 7       // Push button input
+#define BUTTON_1 24        // Button 1 input
+#define BUTTON_2 5         // Button 2 input
+#define BUTTON_3 6         // Button 3 input
+#define SD_CS 53           // SD card chip select (Arduino Mega)
 #define RELAY_1 22         // Grinding motor relay
 #define RELAY_2 23         // Vinegar pump relay
 ```
