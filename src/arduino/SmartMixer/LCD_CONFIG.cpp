@@ -1,24 +1,28 @@
+#include <Arduino.h>
 #include "LCD_CONFIG.h"
 
-LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
+LiquidCrystal_I2C lcd(0x27, 16, 4);
 
 //-----------------------------------------------------------------
-//FUNCTION FOR INITIALIZING I2C LCD--------------------------------
+//FUNCTION FOR CLEARNING MESSAGE FROM I2C LCD----------------------
 //-----------------------------------------------------------------
 void initLCD(){
   lcd.init();
   lcd.backlight();
 }
 
+
 //-----------------------------------------------------------------
-//FUNCTION FOR CLEARING MESSAGE FROM I2C LCD-----------------------
+//FUNCTION FOR CLEARNING MESSAGE FROM I2C LCD----------------------
 //-----------------------------------------------------------------
 void clearLCD(){
   lcd.clear();
 }
 
+
+
 //-----------------------------------------------------------------
-//FUNCTION FOR SETTING MESSAGE I2C LCD----------------------------
+//FUNCTION FOR SETTING MESSAGE I2C LCD-----------------------------
 //-----------------------------------------------------------------
 void setLCDText(String text, int x, int y) {
   lcd.setCursor(x, y);

@@ -3,24 +3,10 @@
 
 #include "PINS_CONFIG.h"
 
-// Relay configuration
-
-//-----------------------------------------------------------------
-//FUNCTION FOR SETTING RELAY PIN MODE------------------------------
-//-----------------------------------------------------------------
 void initRELAY();
 
-//-----------------------------------------------------------------
-//FUNCTION FOR OPERATING RELAY-------------------------------------
-//-----------------------------------------------------------------
-void operateRELAY(int RELAY, bool OPENED);
+void operateRELAY(uint16_t RELAY, boolean OPENED);
 
-//-----------------------------------------------------------------
-//FUNCTION FOR OPERATING SOLID STATE RELAY-------------------------
-//-----------------------------------------------------------------
-void operateSSR(int RELAY, bool OPENED);
-
-// Unified relay operation function
-void operateRelay(int RELAY, bool OPENED, bool isSSR);
+void operateSSR(uint16_t RELAY, boolean OPENED);
 
 #endif

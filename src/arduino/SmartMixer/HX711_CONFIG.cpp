@@ -6,7 +6,7 @@ HX711 scale;
 void initLOADCELL() {
   scale.begin(HX711_DT, HX711_SCK);
 
-  scale.set_scale(HX711_SCALE_FACTOR);  // Use calibration variable
+  scale.set_scale(22500.3f);  // this value is obtained by calibrating the scale with known weights; see the README for details
   scale.tare();              // reset the scale to 0
 
   Serial.println("HX711 Tare successful");
@@ -14,7 +14,6 @@ void initLOADCELL() {
 
 float getLOADCELLWeight() {
   float weight = scale.get_units(10);
-  weight -= HX711_OFFSET;  // Apply offset
   if (weight < 0)
     return 0;
   else

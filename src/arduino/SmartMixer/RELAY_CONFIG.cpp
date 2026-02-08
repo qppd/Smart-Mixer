@@ -9,33 +9,26 @@ void initRELAY(){
   pinMode(RELAY_2, OUTPUT);
 }
 
+
+
 //-----------------------------------------------------------------
 //FUNCTION FOR OPERATING RELAY-------------------------------------
 //-----------------------------------------------------------------
-void operateRELAY(int RELAY, bool OPENED) {
-  operateRelay(RELAY, OPENED, false);
+void operateRELAY(uint16_t RELAY, boolean OPENED) {
+  if (OPENED)
+    digitalWrite(RELAY, HIGH);
+  else
+    digitalWrite(RELAY, LOW);
 }
+
+
 
 //-----------------------------------------------------------------
 //FUNCTION FOR OPERATING SOLID STATE RELAY-------------------------
 //-----------------------------------------------------------------
-void operateSSR(int RELAY, bool OPENED) {
-  operateRelay(RELAY, OPENED, true);
-}
-
-//-----------------------------------------------------------------
-//UNIFIED RELAY OPERATION FUNCTION---------------------------------
-//-----------------------------------------------------------------
-void operateRelay(int RELAY, bool OPENED, bool isSSR) {
-  if (isSSR) {
-    if (OPENED)
-      digitalWrite(RELAY, HIGH);
-    else
-      digitalWrite(RELAY, LOW);
-  } else {
-    if (OPENED)
-      digitalWrite(RELAY, LOW);
-    else
-      digitalWrite(RELAY, HIGH);
-  }
+void operateSSR(uint16_t RELAY, boolean OPENED) {
+  if (OPENED)
+    digitalWrite(RELAY, HIGH);
+  else
+    digitalWrite(RELAY, LOW);
 }

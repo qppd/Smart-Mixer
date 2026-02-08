@@ -1,28 +1,26 @@
 #ifndef DHT_CONFIG_H
 #define DHT_CONFIG_H
 
-#include "PINS_CONFIG.h"
 #include "DHT.h"
-#include "CALIBRATION_CONFIG.h"
+#include "PINS_CONFIG.h"
 
-// DHT sensor configuration
-#define DHTTYPE DHT22  // DHT 22 (AM2302), AM2321
+//#define DHTTYPE DHT11   // DHT 11
+#define DHTTYPE DHT22  // DHT 22  (AM2302), AM2321
+//#define DHTTYPE DHT21   // DHT 21 (AM2301)
 
 extern DHT dht;
 
-//-----------------------------------------------------------------
-//FUNCTION FOR INITIALIZING DHT SENSOR-----------------------------
-//-----------------------------------------------------------------
 void initDHT();
 
-//-----------------------------------------------------------------
-//FUNCTION FOR GETTING DHT TEMPERATURE----------------------------
-//-----------------------------------------------------------------
+/*
+  Function/Method for getting DHT temperature
+  
+*/
 float getDHTTemperature(boolean isFarenheit);
 
-//-----------------------------------------------------------------
-//FUNCTION FOR GETTING DHT HUMIDITY-------------------------------
-//-----------------------------------------------------------------
+/*
+  Function/Method for getting DHT humidity
+*/
 float getDHTHumidity();
 
 #endif
