@@ -17,4 +17,15 @@
 
 // Button pin
 #define BUTTON_PIN 7  // Push button for process initiation
+
+// Multiple buttons configuration
+#define BUTTON_COUNT 3
+#define DEBOUNCE_DELAY 50
+
+#define BUTTON_1 24
+#define BUTTON_2 5
+#define BUTTON_3 6
+
+// SD card chip select pin
+#define SD_CS 53  // For Arduino Mega
 #endif
