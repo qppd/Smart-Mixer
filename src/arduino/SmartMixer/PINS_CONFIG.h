@@ -5,13 +5,16 @@
 #define DHT_PIN 2
 
 // HX711 load cell amplifier pins
-#define HX711_DT 4
-#define HX711_SCK 3
+#define HX711_DT 25
+#define HX711_SCK 23
 
 // pH sensor pin
 #define PH_PIN A0
 
 // Relay pins
-#define RELAY_1 22  // Regular relay
-#define RELAY_2 23  // SSR relay
+#define RELAY_1 22  // Regular relay (Grinding motor)
+#define RELAY_2 23  // SSR relay (Vinegar pump)
+
+// Button pin
+#define BUTTON_PIN 7  // Push button for process initiation
 #endif

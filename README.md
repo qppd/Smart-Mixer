@@ -1,9 +1,9 @@
-# Egg Shell Fertilizer Mixer 🌱
+# Microcontroller-Regulated Eggshell Grinder and Reactor for Efficient Calcium Acetate Fertilizer Synthesis 🌱⚗️
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Arduino](https://img.shields.io/badge/Arduino-1.8.19%2B-blue)](https://www.arduino.cc/)
 
-An automated Arduino-based fertilizer production system that mixes egg shell powder and vinegar, with intelligent control based on real-time temperature and pH monitoring to create optimal calcium acetate fertilizer.
+An automated Arduino-based system that grinds eggshells to precise weights and reacts them with vinegar to produce calcium acetate fertilizer, with intelligent monitoring and control throughout the entire synthesis process.
 
 ## 📋 Table of Contents
 
@@ -23,25 +23,36 @@ An automated Arduino-based fertilizer production system that mixes egg shell pow
 
 ## 🌱 About
 
-This project automates the production of organic calcium acetate fertilizer by mixing crushed egg shells (calcium carbonate) with vinegar (acetic acid). The system monitors temperature and pH levels in real-time to ensure optimal reaction conditions and automatically controls mixing operations.
+This project implements a complete automated synthesis system for calcium acetate fertilizer production. The microcontroller regulates an eggshell grinding process to achieve precise weight measurements, followed by automated vinegar addition in optimal ratios, and continuous monitoring of the exothermic reaction until completion.
 
 **Chemical Reaction**: CaCO₃ (egg shells) + 2CH₃COOH (vinegar) → Ca(CH₃COO)₂ (calcium acetate) + H₂O + CO₂
 
+**Key Features**:
+- Precision grinding with real-time weight feedback
+- Automated 1:2 ratio vinegar addition
+- Reaction monitoring until bubbling cessation
+- Temperature stabilization at ~39°C
+- Complete process automation with LCD user interface
+
 ## ✨ Features
 
-### 🔬 Automated Fertilizer Production
-- **Intelligent Mixing**: Automated control based on pH and temperature thresholds
-- **Reaction Monitoring**: Real-time tracking of chemical reaction progress
-- **Optimal Conditions**: Maintains ideal temperature range for calcium acetate formation
-- **pH-Based Control**: Stops mixing when target pH is achieved
+### 🔬 Automated Fertilizer Synthesis
+- **Precision Grinding**: Automated eggshell grinding to exact weight specifications
+- **Intelligent Ratio Control**: Automated 1:2 eggshell-to-vinegar ratio addition
+- **Reaction Monitoring**: Continuous tracking until bubbling stops and temperature stabilizes
+- **Complete Process Automation**: From grinding to final product with minimal user intervention
 
 ### 🔍 Real-time Monitoring
-- **Temperature Sensing**: DHT22 sensor for accurate temperature readings
-- **Weight Measurement**: HX711 load cell amplifier for precise weight monitoring
-- **pH Level Detection**: Analog pH sensor with noise-filtered readings
-- **Serial Output**: Real-time data display via Serial monitor
+- **Temperature Sensing**: DHT22 sensor tracking reaction temperature (target: ~39°C)
+- **Weight Measurement**: HX711 load cell for precise grinding and ratio control
+- **pH Level Detection**: Analog pH sensor monitoring reaction progress
+- **Serial Output**: Real-time data logging and display
 
 ### 🎛️ Control Systems
+- **Grinding Motor Control**: Relay-controlled motor for eggshell grinding
+- **Automated Pumping**: SSR-controlled pump for precise vinegar addition
+- **LCD User Interface**: I2C LCD for process status and user input
+- **Button Input System**: User controls for process initiation and parameter input
 - **Dual Relay Control**: Regular and solid-state relays for mixing operations
 - **LCD Display**: I2C LCD for local status visualization (configurable)
 - **Power Management**: Sleep/wake functionality for energy efficiency
@@ -53,39 +64,82 @@ This project automates the production of organic calcium acetate fertilizer by m
 
 ## ⚗️ How It Works
 
-### Fertilizer Production Process
-1. **Ingredient Preparation**: Egg shells are crushed into powder, vinegar is measured
-2. **Automated Mixing**: System starts mixing when ingredients are added
-3. **Reaction Monitoring**: Temperature and pH are continuously monitored
-4. **Optimal Conditions**: Mixing speed adjusts based on sensor readings
-5. **Completion Detection**: Process stops when target pH (4.5-5.5) is reached
-6. **Safety Controls**: System prevents overheating or unsafe pH levels
+### Complete Synthesis Process Flowchart
+
+```
+START
+  ↓
+Put Eggshell → Press Button → LCD Shows Message
+  ↓
+Input Desired Grams (g) to Grind → Loadcell Ready
+  ↓
+Motor ON (Grinding Starts)
+  ↓
+┌─ Decision: Loadcell = Desired Weight?
+│   NO → Continue Grinding (Motor ON)
+└─ YES → Motor OFF → Pump ON
+      ↓
+Pump Runs Until 1:2 Ratio Achieved
+      ↓
+Monitor Solution (Temperature & pH)
+      ↓
+Store Data & Continue Monitoring
+      ↓
+Until Bubbling Stops & Temp ≈ 39°C
+      ↓
+END (Fertilizer Ready)
+```
+
+### Detailed Process Steps
+
+1. **System Initialization**: Arduino boots up, initializes sensors and LCD
+2. **Eggshell Loading**: User places eggshells in grinding chamber
+3. **Process Start**: User presses button to begin synthesis
+4. **Parameter Input**: LCD prompts for desired eggshell weight in grams
+5. **Grinding Phase**: Motor activates, load cell monitors weight in real-time
+6. **Weight Verification**: System checks if target weight is achieved
+7. **Grinding Completion**: Motor stops when desired weight is reached
+8. **Vinegar Addition**: Pump activates to add vinegar in 1:2 ratio
+9. **Reaction Monitoring**: Continuous temperature and pH monitoring begins
+10. **Data Logging**: All sensor readings stored and displayed
+11. **Completion Detection**: Process continues until bubbling stops and temperature stabilizes at ~39°C
+12. **System Shutdown**: Automatic completion when reaction is finished
 
 ### Control Logic
-- **Temperature Range**: 20-30°C optimal for reaction
-- **pH Target**: 4.5-5.5 for calcium acetate formation
-- **Mixing Control**: Relays activate motors/pumps based on conditions
-- **Safety Shutdown**: Automatic stop if parameters exceed safe limits
+- **Grinding Control**: Relay 1 controls grinding motor with weight feedback
+- **Pumping Control**: Relay 2 (SSR) controls vinegar pump with ratio feedback
+- **Reaction Endpoints**: Process completes when CO₂ evolution ceases and temperature peaks
+- **Safety Monitoring**: Continuous parameter checking prevents unsafe conditions
 
 ## 🔧 Hardware Requirements
 
 ### Core Components
 - **Arduino Board** (Uno, Mega, or compatible)
 - **DHT22 Temperature & Humidity Sensor**
-- **HX711 Load Cell Amplifier** + Load Cell
+- **HX711 Load Cell Amplifier** + Load Cell (for weight measurement)
 - **Analog pH Sensor Module**
 - **I2C LCD Display (16x2 or 20x4)**
-- **2-Channel Relay Module** (Regular + SSR)
+- **Momentary Push Button** (for process initiation)
+- **DC Motor** (for eggshell grinding)
+- **Peristaltic Pump** (for vinegar addition)
+- **2-Channel Relay Module** (Regular + SSR for motor/pump control)
+
+### Mechanical Components
+- **Grinding Chamber**: Container for eggshell grinding
+- **Reaction Vessel**: Container for fertilizer synthesis
+- **Load Cell Mounting**: Proper setup for weight measurement
+- **Tubing System**: For vinegar transfer from pump to reaction vessel
 
 ### Pin Configuration
 ```
-DHT22 Sensor    -> Pin 2
-HX711 DT        -> Pin 25
-HX711 SCK       -> Pin 23
-pH Sensor       -> A0
-LCD I2C         -> I2C pins (SDA, SCL)
-Relay 1 (REG)   -> Pin 22
-Relay 2 (SSR)   -> Pin 23
+DHT22 Sensor      -> Pin 2
+HX711 DT          -> Pin 25
+HX711 SCK         -> Pin 23
+pH Sensor         -> A0
+LCD I2C           -> I2C pins (SDA, SCL)
+Push Button       -> Pin 7 (with pull-up resistor)
+Grinding Motor    -> Pin 22 (via Relay 1)
+Vinegar Pump      -> Pin 23 (via Relay 2)
 ```
 
 ## 💻 Software Requirements
@@ -129,36 +183,47 @@ Install via Arduino Library Manager:
 
 ## 📖 Usage
 
-### Fertilizer Production Process
-1. **Setup Equipment**: Connect sensors and load mixing container on scale
-2. **Power On System**: Arduino initializes all sensors and displays startup message
-3. **Add Ingredients**: Place crushed egg shells and measured vinegar in container
-4. **Start Mixing**: System begins monitoring and controls mixing automatically
-5. **Monitor Progress**: View real-time temperature, weight, and pH on Serial Monitor
-6. **Automatic Completion**: System stops when optimal pH is reached
+### Fertilizer Synthesis Process
+
+1. **System Setup**: Power on Arduino, ensure all sensors are connected
+2. **Load Eggshells**: Place eggshells in the grinding chamber on the load cell
+3. **Start Process**: Press the push button to initiate synthesis
+4. **Parameter Input**: LCD displays "Enter weight (g):", use buttons to input desired grams
+5. **Grinding Phase**: Motor activates, grinding continues until target weight is reached
+6. **Weight Verification**: System automatically stops grinding when load cell measures desired weight
+7. **Vinegar Addition**: Pump activates to add vinegar in 1:2 ratio to eggshell weight
+8. **Reaction Monitoring**: System continuously monitors temperature and pH
+9. **Data Logging**: All readings displayed on Serial Monitor and optionally LCD
+10. **Completion Detection**: Process ends when bubbling stops and temperature stabilizes at ~39°C
 
 ### Serial Output Format
 ```
-Temperature: 25.50 --- Weight: 150.25 --- pH: 4.80 ---
+Temperature: 39.20°C --- Weight: 150.00g --- pH: 4.80 --- Status: REACTING
+Temperature: 39.50°C --- Weight: 450.00g --- pH: 5.20 --- Status: COMPLETE
 ```
 
-### Production Parameters
-- **Optimal Temperature**: 20-30°C for reaction efficiency
-- **Target pH Range**: 4.5-5.5 for calcium acetate formation
-- **Mixing Duration**: Variable based on ingredient ratios and conditions
-- **Safety Limits**: Automatic shutdown if temperature > 35°C or pH < 4.0
+### Process Parameters
+- **Grinding Weight**: User-defined (typically 100-200g eggshells)
+- **Vinegar Ratio**: Automatic 1:2 eggshell-to-vinegar ratio
+- **Reaction Temperature**: Target ~39°C (normal temperature change)
+- **Completion Criteria**: Bubbling cessation + temperature stabilization
+- **Monitoring Duration**: Continuous until reaction completion
 
 ### Control Examples
 ```cpp
-// Start mixing motor (regular relay)
+// Start grinding motor
 operateRELAY(RELAY_1, true);
 
-// Activate vinegar pump (solid-state relay)
-operateSSR(RELAY_2, true);
+// Check if target weight reached
+if (getLOADCELLWeight() >= targetWeight) {
+    operateRELAY(RELAY_1, false); // Stop grinding
+    operateSSR(RELAY_2, true);    // Start vinegar pump
+}
 
-// Check if reaction is complete
-if (getPHValue() >= 4.5 && getPHValue() <= 5.5) {
-    operateRELAY(RELAY_1, false); // Stop mixing
+// Monitor reaction completion
+if (getPHValue() >= 4.5 && getDHTTemperature(false) >= 38.0) {
+    // Reaction complete - stop all operations
+    operateSSR(RELAY_2, false);
 }
 ```
 
@@ -200,11 +265,12 @@ Smart-Mixer/
 
 ## ⚙️ Configuration
 
-### Fertilizer Production Parameters
-- **Target pH Range**: 4.5-5.5 (optimal for calcium acetate)
-- **Optimal Temperature**: 20-30°C (reaction efficiency)
-- **Safety Limits**: Max 35°C, Min pH 4.0
-- **Mixing Ratios**: 1:2 egg shell powder to vinegar (adjustable)
+### Fertilizer Synthesis Parameters
+- **Target Grinding Weight**: User-defined (100-200g recommended)
+- **Vinegar Ratio**: 1:2 eggshell-to-vinegar (automatic calculation)
+- **Reaction Temperature**: ~39°C (normal temperature increase)
+- **Completion Criteria**: Bubbling cessation + temperature stabilization
+- **Safety Limits**: Max 45°C, Min pH 4.0, Max weight 500g
 
 ### Calibration Values
 - **HX711 Scale Factor**: `22500.3f` (adjust for your load cell)
@@ -217,15 +283,17 @@ Edit `PINS_CONFIG.h` to modify hardware connections:
 #define HX711_DT 25        // Load cell data
 #define HX711_SCK 23       // Load cell clock
 #define PH_PIN A0          // pH sensor analog input
-#define RELAY_1 22         // Mixing motor relay
-#define RELAY_2 23         // Pump/valve relay
+#define BUTTON_PIN 7       // Push button input
+#define RELAY_1 22         // Grinding motor relay
+#define RELAY_2 23         // Vinegar pump relay
 ```
 
 ### Sensor Parameters
 - **DHT Type**: Currently set to DHT22 (configurable)
 - **pH Sampling**: 10 readings with median filtering for noise reduction
 - **Weight Averaging**: 10-sample moving average for stability
-- **Temperature Units**: Celsius (configurable to Fahrenheit)
+- **Button Debouncing**: 50ms debounce delay
+- **LCD Refresh Rate**: 500ms update interval
 
 ## 📚 API Reference
 
