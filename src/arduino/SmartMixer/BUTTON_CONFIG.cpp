@@ -34,12 +34,12 @@ void setInputFlags() {
     if (millis() - lastDebounceTime[i] > DEBOUNCE_DELAY) {  // if arduino's running time and lastDebounceTime difference is greater than debounceDelay
       if (reading != inputState[i]) {                       // if reading is not equal to inputState
         inputState[i] = reading;                            // then make inputState equals to reading
-        if (inputState[i] == HIGH) {                        // if inputState is equal to high which is Pressed switch then
-          inputFlags[i] = HIGH;                             // make inputFlag equal to high
+        if (inputState[i] == LOW) {                         // if inputState is LOW, button is pressed (active LOW with pull-up)
+          inputFlags[i] = HIGH;                             // set inputFlag to HIGH to indicate button press detected
         }
       }
     }
-    lastInputState[i] = reading;  // set last Input state equal to reading of every switches
+    lastInputState[i] = reading;  // update lastInputState for next iteration
   }                               // loop end
 }
 
