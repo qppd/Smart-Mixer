@@ -12,8 +12,8 @@
 #define PH_PIN A0
 
 // Relay pins
-#define RELAY_1 22  // Regular relay (Grinding motor)
-#define RELAY_2 23  // SSR relay (Vinegar pump)
+#define RELAY_1 23  // SSR relay (Grinding motor)
+#define RELAY_2 22  // Regular relay (Vinegar pump)
 
 // Multiple buttons configuration
 #define BUTTON_COUNT 3

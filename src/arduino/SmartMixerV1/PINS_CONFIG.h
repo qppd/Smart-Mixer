@@ -12,8 +12,8 @@
 #define PH_PIN A0
 
 // Relay pins
-#define RELAY_GRINDER 22   // Grinding motor relay
-#define RELAY_PUMP 23      // Peristaltic pump relay (SSR for PWM/PID)
+#define RELAY_GRINDER 23   // Grinding motor relay (SSR for PWM/PID)
+#define RELAY_PUMP 22      // Peristaltic pump relay
 
 // Multiple buttons configuration
 #define BUTTON_COUNT 3
