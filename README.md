@@ -5,7 +5,7 @@
 
 An automated Arduino-based system that grinds eggshells to precise weights and reacts them with vinegar to produce calcium acetate fertilizer, with intelligent monitoring and control throughout the entire synthesis process.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [About](#-about)
 - [Features](#-features)
@@ -21,7 +21,7 @@ An automated Arduino-based system that grinds eggshells to precise weights and r
 - [License](#-license)
 - [Author](#-author)
 
-## 🌱 About
+## About
 
 This project implements a complete automated synthesis system for calcium acetate fertilizer production. The microcontroller regulates an eggshell grinding process to achieve precise weight measurements, followed by automated vinegar addition in optimal ratios, and continuous monitoring of the exothermic reaction until completion.
 
@@ -34,15 +34,15 @@ This project implements a complete automated synthesis system for calcium acetat
 - Temperature stabilization at ~39°C
 - Complete process automation with LCD user interface
 
-## ✨ Features
+## Features
 
-### 🔬 Automated Fertilizer Synthesis
+### Automated Fertilizer Synthesis
 - **Precision Grinding**: Automated eggshell grinding to exact weight specifications
 - **Intelligent Ratio Control**: Automated 1:12 eggshell-to-vinegar ratio addition
 - **Reaction Monitoring**: Continuous tracking until bubbling stops and temperature stabilizes
 - **Complete Process Automation**: From grinding to final product with minimal user intervention
 
-### 🔍 Real-time Monitoring
+### Real-time Monitoring
 - **Temperature Sensing**: DHT22 sensor tracking reaction temperature (target: ~39°C)
 - **Weight Measurement**: HX711 load cell for precise grinding and ratio control
 - **pH Level Detection**: Analog pH sensor monitoring reaction progress
@@ -57,12 +57,12 @@ This project implements a complete automated synthesis system for calcium acetat
 - **LCD Display**: I2C LCD for local status visualization (configurable)
 - **Power Management**: Sleep/wake functionality for energy efficiency
 
-### 🏗️ Software Architecture
+###  Software Architecture
 - **Modular Design**: Separate configuration files for each component
 - **Centralized Pin Management**: All hardware pins defined in one location
 - **Extensible Codebase**: Easy to add new sensors or actuators
 
-## ⚗️ How It Works
+##  How It Works
 
 ### Complete Synthesis Process Flowchart
 
@@ -111,7 +111,7 @@ END (Fertilizer Ready)
 - **Reaction Endpoints**: Process completes when CO₂ evolution ceases and temperature peaks
 - **Safety Monitoring**: Continuous parameter checking prevents unsafe conditions
 
-## 🔧 Hardware Requirements
+## Hardware Requirements
 
 ### Core Components
 - **Arduino Board** (Uno, Mega, or compatible)
@@ -148,7 +148,7 @@ SD Card CS        -> Pin 53 (Arduino Mega)
 
 The Fritzing file is available at [wiring/SmartMixer.fzz](wiring/SmartMixer.fzz)
 
-## 💻 Software Requirements
+## Software Requirements
 
 ### Arduino IDE
 - **Version**: 1.8.19 or higher
@@ -160,7 +160,7 @@ Install via Arduino Library Manager:
 - `LiquidCrystal_I2C` by Marco Schwartz
 - `HX711` by Bogdan Necula
 
-## 🚀 Installation
+## Installation
 
 1. **Clone the Repository**
    ```bash
@@ -187,7 +187,7 @@ Install via Arduino Library Manager:
    - Select correct board and port
    - Click Upload button
 
-## 📖 Usage
+## Usage
 
 ### Fertilizer Synthesis Process
 
@@ -266,7 +266,7 @@ Smart-Mixer/
  - **`SD_CONFIG.*`**: SD card logging and storage
  - **`BUTTON_CONFIG.*`**: Three-button input handling with debounce
 
-## ⚙️ Configuration
+## Configuration
 
 ### Fertilizer Synthesis Parameters
 - **Target Grinding Weight**: User-defined (100-200g recommended)
@@ -301,7 +301,7 @@ Edit `PINS_CONFIG.h` to modify hardware connections:
 - **Button Debouncing**: 50ms debounce delay
 - **LCD Refresh Rate**: 500ms update interval
 
-## 📚 API Reference
+## API Reference
 
 ### Temperature Functions
 ```cpp
@@ -338,7 +338,7 @@ void operateRELAY(uint16_t relay, boolean state); // Control regular relay
 void operateSSR(uint16_t relay, boolean state);   // Control SSR
 ```
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please follow these steps:
 
@@ -354,7 +354,7 @@ We welcome contributions! Please follow these steps:
 - Test hardware compatibility
 - Update documentation
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
