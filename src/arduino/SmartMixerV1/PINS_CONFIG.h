@@ -11,15 +11,9 @@
 // pH sensor pin (analog)
 #define PH_PIN A0
 
-// Flow sensor pin (for vinegar measurement)
-#define FLOW_SENSOR_PIN 3  // Interrupt-capable pin
-
 // Relay pins
 #define RELAY_GRINDER 22   // Grinding motor relay
 #define RELAY_PUMP 23      // Peristaltic pump relay (SSR for PWM/PID)
-
-// Button pin
-#define BUTTON_PIN 7  // Push button for process initiation
 
 // Multiple buttons configuration
 #define BUTTON_COUNT 3

@@ -15,9 +15,6 @@
 #define RELAY_1 22  // Regular relay (Grinding motor)
 #define RELAY_2 23  // SSR relay (Vinegar pump)
 
-// Button pin
-#define BUTTON_PIN 7  // Push button for process initiation
-
 // Multiple buttons configuration
 #define BUTTON_COUNT 3
 #define DEBOUNCE_DELAY 50
