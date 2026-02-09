@@ -51,7 +51,7 @@ void createCSVFile(String filename) {
   // Create new file with header
   myFile = SD.open(filename.c_str(), FILE_WRITE);
   if (myFile) {
-    myFile.println("time_sec,temp_C,ph,weight_g,volume_ml");
+    myFile.println("time_sec,temp_C,ph,weight_g,dispensed_weight_g");
     myFile.close();
     Serial.println("CSV file created: " + filename);
   } else {
@@ -62,7 +62,7 @@ void createCSVFile(String filename) {
 //-----------------------------------------------------------------
 //FUNCTION FOR LOGGING DATA TO CSV---------------------------------
 //-----------------------------------------------------------------
-void logDataToCSV(String filename, unsigned long time, float temp, float ph, float weight, float volume) {
+void logDataToCSV(String filename, unsigned long time, float temp, float ph, float weight, float dispensedWeight) {
   myFile = SD.open(filename.c_str(), FILE_WRITE);
   if (myFile) {
     // Format: time,temp,ph,weight,volume
@@ -74,7 +74,7 @@ void logDataToCSV(String filename, unsigned long time, float temp, float ph, flo
     myFile.print(",");
     myFile.print(weight, 2);
     myFile.print(",");
-    myFile.println(volume, 2);
+    myFile.println(dispensedWeight, 2);
     
     myFile.close();
     
@@ -87,9 +87,9 @@ void logDataToCSV(String filename, unsigned long time, float temp, float ph, flo
     Serial.print(ph);
     Serial.print(", W:");
     Serial.print(weight);
-    Serial.print("g, V:");
-    Serial.print(volume);
-    Serial.println("ml");
+    Serial.print("g, Dispensed:");
+    Serial.print(dispensedWeight);
+    Serial.println("g");
   } else {
     Serial.println("Error writing to CSV: " + filename);
   }

@@ -3,12 +3,12 @@
  * 
  * Process Flow:
  * 1. Grinding Stage - Grind eggshells to target weight
- * 2. Vinegar Dispensing - Add vinegar at 1:12 ratio (PID controlled)
+ * 2. Vinegar Dispensing - Add vinegar at 1:12 ratio (weight-based)
  * 3. Reaction Monitoring - Monitor temp, pH, log data
  * 4. Completion Detection - Temp stabilizes, pH stabilizes
  * 
  * Features:
- * - PID control for precise vinegar dosing
+ * - Weight-based control for precise vinegar dosing
  * - Automatic calibration for load cell and flow sensor
  * - CSV data logging to SD card
  * - Temperature and pH monitoring
@@ -22,7 +22,6 @@
 #include "SD_CONFIG.h"
 #include "BUTTON_CONFIG.h"
 #include "FLOW_SENSOR_CONFIG.h"
-#include "PID_CONFIG.h"
 
 // Process states
 enum ProcessState {
@@ -40,11 +39,12 @@ enum ProcessState {
 ProcessState currentState = STATE_IDLE;
 float targetEggshellGrams = 50.0;  // Default target
 float vinegarRatio = 12.0;         // 1:12 ratio
-float targetVinegarML = 0;
+float targetVinegarGrams = 0;
 float currentWeight = 0;
 float currentTemp = 0;
 float currentPH = 0;
 float currentVolume = 0;
+float initialWeightBeforeDispensing = 0;
 
 // Reaction monitoring variables
 float baselineTemp = 25.0;         // Ambient temperature
@@ -81,7 +81,6 @@ void setup() {
   initSD();
   initBUTTONS();
   initFLOWSENSOR();
-  initPID();
   
   // Create CSV file for data logging
   createCSVFile(csvFilename);
@@ -246,14 +245,14 @@ void handleInputTargetState() {
   }
   
   Serial.println(targetEggshellGrams);
-  targetVinegarML = targetEggshellGrams * vinegarRatio;
+  targetVinegarGrams = targetEggshellGrams * vinegarRatio;
   
   Serial.print("Target Eggshell: ");
   Serial.print(targetEggshellGrams);
   Serial.println(" g");
   Serial.print("Required Vinegar: ");
-  Serial.print(targetVinegarML);
-  Serial.println(" ml");
+  Serial.print(targetVinegarGrams);
+  Serial.println(" g");
   
   // Tare the scale
   tareLOADCELL();
@@ -314,36 +313,39 @@ void handleGrindingState() {
 //-----------------------------------------------------------------
 void handleDispensingState() {
   static bool dispensingStarted = false;
+  static float initialWeight = 0;
+  static float targetTotalWeight = 0;
   
   if (!dispensingStarted) {
     Serial.println("\n=== Vinegar Dispensing Stage ===");
     Serial.print("Dispensing ");
-    Serial.print(targetVinegarML);
-    Serial.println(" ml of vinegar...");
+    Serial.print(targetVinegarGrams);
+    Serial.println(" g of vinegar...");
     
-    resetFlowSensor();
-    setPumpSetpoint(targetVinegarML);
-    resetPID();
+    // Record initial weight (eggshells + container)
+    initialWeight = getLOADCELLWeight();
+    initialWeightBeforeDispensing = initialWeight;
+    targetTotalWeight = initialWeight + targetVinegarGrams;
+    
+    // Start dispensing
+    operatePUMP(true);
     dispensingStarted = true;
   }
   
-  // Read current volume
-  getFlowRate();  // Update flow calculations
-  currentVolume = getTotalVolume();
+  // Read current weight
+  currentWeight = getLOADCELLWeight();
+  float dispensedWeight = currentWeight - initialWeight;
   
-  // Update PID with current volume
-  updateCurrentVolume(currentVolume);
-  
-  // Apply PID control to pump
-  if (currentVolume < targetVinegarML) {
-    // Use PID for precise control
-    computePID();
-  } else {
+  // Check if target reached
+  if (dispensedWeight >= targetVinegarGrams) {
     operatePUMP(false);
     Serial.println("Vinegar dispensing complete!");
-    Serial.print("Final volume: ");
-    Serial.print(currentVolume);
-    Serial.println(" ml");
+    Serial.print("Final weight: ");
+    Serial.print(currentWeight);
+    Serial.println(" g");
+    Serial.print("Dispensed: ");
+    Serial.print(dispensedWeight);
+    Serial.println(" g");
     
     dispensingStarted = false;
     processStartTime = millis();
@@ -352,13 +354,13 @@ void handleDispensingState() {
   
   // Display progress
   if (millis() - lastSensorRead >= 1000) {
-    Serial.print("Dispensed: ");
-    Serial.print(currentVolume);
-    Serial.print(" ml / ");
-    Serial.print(targetVinegarML);
-    Serial.println(" ml");
-    Serial.print("PID Output: ");
-    Serial.println(outputPump);
+    Serial.print("Current weight: ");
+    Serial.print(currentWeight);
+    Serial.print(" g (Dispensed: ");
+    Serial.print(dispensedWeight);
+    Serial.print(" g / ");
+    Serial.print(targetVinegarGrams);
+    Serial.println(" g)");
     lastSensorRead = millis();
   }
 }
@@ -384,7 +386,8 @@ void handleMonitoringState() {
     
     // Log data to SD card
     unsigned long elapsedTime = millis() - processStartTime;
-    logDataToCSV(csvFilename, elapsedTime, currentTemp, currentPH, currentWeight, currentVolume);
+    float dispensedVinegarWeight = currentWeight - initialWeightBeforeDispensing;
+    logDataToCSV(csvFilename, elapsedTime, currentTemp, currentPH, currentWeight, dispensedVinegarWeight);
     
     // Check reaction status
     float tempDiff = currentTemp - baselineTemp;
@@ -448,8 +451,8 @@ void handleCompleteState() {
   Serial.print(currentWeight);
   Serial.println(" g");
   Serial.print("Total vinegar: ");
-  Serial.print(currentVolume);
-  Serial.println(" ml");
+  Serial.print(currentWeight - initialWeightBeforeDispensing);
+  Serial.println(" g");
   Serial.print("Final temp: ");
   Serial.print(currentTemp);
   Serial.println(" C");
