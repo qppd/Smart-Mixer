@@ -49,11 +49,11 @@ This project implements a complete automated synthesis system for calcium acetat
 - **Serial Output**: Real-time data logging and display
 
 ### 🎛️ Control Systems
-- **Grinding Motor Control**: Relay-controlled motor for eggshell grinding
-- **Automated Pumping**: SSR-controlled pump for precise vinegar addition
+- **Grinding Motor Control**: SSR-controlled motor for eggshell grinding
+- **Automated Pumping**: Relay-controlled pump for precise vinegar addition
 - **LCD User Interface**: I2C LCD for process status and user input
 - **Button Input System**: User controls for process initiation and parameter input
-- **Dual Relay Control**: Regular and solid-state relays for mixing operations
+- **Dual Relay Control**: SSR and regular relays for mixing operations
 - **LCD Display**: I2C LCD for local status visualization (configurable)
 - **Power Management**: Sleep/wake functionality for energy efficiency
 
@@ -69,7 +69,7 @@ This project implements a complete automated synthesis system for calcium acetat
 ```
 START
   ↓
-Put Eggshell → Press Button → LCD Shows Message
+Put Eggshell → Press Start Button → LCD Shows Message
   ↓
 Input Desired Grams (g) to Grind → Loadcell Ready
   ↓
@@ -106,8 +106,8 @@ END (Fertilizer Ready)
 12. **System Shutdown**: Automatic completion when reaction is finished
 
 ### Control Logic
-- **Grinding Control**: Relay 1 controls grinding motor with weight feedback
-- **Pumping Control**: Relay 2 (SSR) controls vinegar pump with ratio feedback
+- **Grinding Control**: SSR Relay (Pin 23) controls grinding motor with weight feedback
+- **Pumping Control**: Regular Relay (Pin 22) controls vinegar pump with ratio feedback
 - **Reaction Endpoints**: Process completes when CO₂ evolution ceases and temperature peaks
 - **Safety Monitoring**: Continuous parameter checking prevents unsafe conditions
 
@@ -133,13 +133,14 @@ END (Fertilizer Ready)
 ### Pin Configuration
 ```
 DHT22 Sensor      -> Pin 2
-HX711 DT          -> Pin 25
-HX711 SCK         -> Pin 23
+HX711 DT          -> Pin 4
+HX711 SCK         -> Pin 3
 pH Sensor         -> A0
 LCD I2C           -> I2C pins (SDA, SCL)
-Push Button       -> Pin 7 (with pull-up resistor)
-Grinding Motor    -> Pin 22 (via Relay 1)
-Vinegar Pump      -> Pin 23 (via Relay 2)
+Buttons           -> Pins 24 (Start), 5 (Stop), 6 (Calibrate)
+Grinding Motor    -> Pin 23 (via SSR Relay)
+Vinegar Pump      -> Pin 22 (via Regular Relay)
+SD Card CS        -> Pin 53 (Arduino Mega)
 ```
 
 ### Wiring Diagram
@@ -192,7 +193,7 @@ Install via Arduino Library Manager:
 
 1. **System Setup**: Power on Arduino, ensure all sensors are connected
 2. **Load Eggshells**: Place eggshells in the grinding chamber on the load cell
-3. **Start Process**: Press the push button to initiate synthesis
+3. **Start Process**: Press the start button to initiate synthesis
 4. **Parameter Input**: LCD displays "Enter weight (g):", use buttons to input desired grams
 5. **Grinding Phase**: Motor activates, grinding continues until target weight is reached
 6. **Weight Verification**: System automatically stops grinding when load cell measures desired weight
@@ -217,18 +218,18 @@ Temperature: 39.50°C --- Weight: 450.00g --- pH: 5.20 --- Status: COMPLETE
 ### Control Examples
 ```cpp
 // Start grinding motor
-operateRELAY(RELAY_1, true);
+operateSSR(RELAY_GRINDER, true);
 
 // Check if target weight reached
 if (getLOADCELLWeight() >= targetWeight) {
-    operateRELAY(RELAY_1, false); // Stop grinding
-    operateSSR(RELAY_2, true);    // Start vinegar pump
+    operateSSR(RELAY_GRINDER, false); // Stop grinding
+    operateRELAY(RELAY_PUMP, true);   // Start vinegar pump
 }
 
 // Monitor reaction completion
 if (getPHValue() >= 4.5 && getDHTTemperature(false) >= 38.0) {
     // Reaction complete - stop all operations
-    operateSSR(RELAY_2, false);
+    operateRELAY(RELAY_PUMP, false);
 }
 ```
 
@@ -281,16 +282,16 @@ Smart-Mixer/
 ### Pin Customization
 Edit `PINS_CONFIG.h` to modify hardware connections:
 ```cpp
-#define DHT_PIN 2          // Temperature sensor
-#define HX711_DT 25        // Load cell data
-#define HX711_SCK 23       // Load cell clock
+#define TEMP_SENSOR_PIN 2  // Temperature sensor
+#define HX711_DT 4         // Load cell data
+#define HX711_SCK 3        // Load cell clock
 #define PH_PIN A0          // pH sensor analog input
-#define BUTTON_1 24        // Button 1 input
-#define BUTTON_2 5         // Button 2 input
-#define BUTTON_3 6         // Button 3 input
+#define BUTTON_START 24    // Start button
+#define BUTTON_STOP 5      // Stop button
+#define BUTTON_CALIBRATE 6 // Calibrate button
 #define SD_CS 53           // SD card chip select (Arduino Mega)
-#define RELAY_1 22         // Grinding motor relay
-#define RELAY_2 23         // Vinegar pump relay
+#define RELAY_GRINDER 23   // Grinding motor relay (SSR)
+#define RELAY_PUMP 22      // Vinegar pump relay (regular)
 ```
 
 ### Sensor Parameters
