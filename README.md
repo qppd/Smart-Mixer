@@ -142,6 +142,11 @@ Grinding Motor    -> Pin 22 (via Relay 1)
 Vinegar Pump      -> Pin 23 (via Relay 2)
 ```
 
+### Wiring Diagram
+![Wiring Diagram](wiring/SmartMixer.png)
+
+The Fritzing file is available at [wiring/SmartMixer.fzz](wiring/SmartMixer.fzz)
+
 ## 💻 Software Requirements
 
 ### Arduino IDE
