@@ -48,7 +48,7 @@ This project implements a complete automated synthesis system for calcium acetat
 - **pH Level Detection**: Analog pH sensor monitoring reaction progress
 - **Serial Output**: Real-time data logging and display
 
-### 🎛️ Control Systems
+### Control Systems
 - **Grinding Motor Control**: SSR-controlled motor for eggshell grinding
 - **Automated Pumping**: Relay-controlled pump for precise vinegar addition
 - **LCD User Interface**: I2C LCD for process status and user input
@@ -241,7 +241,7 @@ setLCDText("Fertilizer", 0, 0);
 setLCDText("Production", 0, 1);
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Smart-Mixer/
