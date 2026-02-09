@@ -5,8 +5,8 @@
 #define TEMP_SENSOR_PIN 2  // DHT22 sensor
 
 // HX711 load cell amplifier pins
-#define HX711_DT 25
-#define HX711_SCK 26
+#define HX711_DT 4
+#define HX711_SCK 3
 
 // pH sensor pin (analog)
 #define PH_PIN A0

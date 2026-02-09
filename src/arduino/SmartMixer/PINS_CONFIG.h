@@ -5,8 +5,8 @@
 #define DHT_PIN 2
 
 // HX711 load cell amplifier pins
-#define HX711_DT 25
-#define HX711_SCK 23
+#define HX711_DT 4
+#define HX711_SCK 3
 
 // pH sensor pin
 #define PH_PIN A0
