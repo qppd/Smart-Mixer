@@ -29,7 +29,7 @@ This project implements a complete automated synthesis system for calcium acetat
 
 **Key Features**:
 - Precision grinding with real-time weight feedback
-- Automated 1:2 ratio vinegar addition
+- Automated 1:12 ratio vinegar addition
 - Reaction monitoring until bubbling cessation
 - Temperature stabilization at ~39°C
 - Complete process automation with LCD user interface
@@ -38,7 +38,7 @@ This project implements a complete automated synthesis system for calcium acetat
 
 ### 🔬 Automated Fertilizer Synthesis
 - **Precision Grinding**: Automated eggshell grinding to exact weight specifications
-- **Intelligent Ratio Control**: Automated 1:2 eggshell-to-vinegar ratio addition
+- **Intelligent Ratio Control**: Automated 1:12 eggshell-to-vinegar ratio addition
 - **Reaction Monitoring**: Continuous tracking until bubbling stops and temperature stabilizes
 - **Complete Process Automation**: From grinding to final product with minimal user intervention
 
@@ -79,7 +79,7 @@ Motor ON (Grinding Starts)
 │   NO → Continue Grinding (Motor ON)
 └─ YES → Motor OFF → Pump ON
       ↓
-Pump Runs Until 1:2 Ratio Achieved
+Pump Runs Until 1:12 Ratio Achieved
       ↓
 Monitor Solution (Temperature & pH)
       ↓
@@ -197,7 +197,7 @@ Install via Arduino Library Manager:
 4. **Parameter Input**: LCD displays "Enter weight (g):", use buttons to input desired grams
 5. **Grinding Phase**: Motor activates, grinding continues until target weight is reached
 6. **Weight Verification**: System automatically stops grinding when load cell measures desired weight
-7. **Vinegar Addition**: Pump activates to add vinegar in 1:2 ratio to eggshell weight
+7. **Vinegar Addition**: Pump activates to add vinegar in 1:12 ratio to eggshell weight
 8. **Reaction Monitoring**: System continuously monitors temperature and pH
 9. **Data Logging**: All readings displayed on Serial Monitor and optionally LCD
 10. **Completion Detection**: Process ends when bubbling stops and temperature stabilizes at ~39°C
@@ -210,7 +210,7 @@ Temperature: 39.50°C --- Weight: 450.00g --- pH: 5.20 --- Status: COMPLETE
 
 ### Process Parameters
 - **Grinding Weight**: User-defined (typically 100-200g eggshells)
-- **Vinegar Ratio**: Automatic 1:2 eggshell-to-vinegar ratio
+- **Vinegar Ratio**: Automatic 1:12 eggshell-to-vinegar ratio
 - **Reaction Temperature**: Target ~39°C (normal temperature change)
 - **Completion Criteria**: Bubbling cessation + temperature stabilization
 - **Monitoring Duration**: Continuous until reaction completion
@@ -270,7 +270,7 @@ Smart-Mixer/
 
 ### Fertilizer Synthesis Parameters
 - **Target Grinding Weight**: User-defined (100-200g recommended)
-- **Vinegar Ratio**: 1:2 eggshell-to-vinegar (automatic calculation)
+- **Vinegar Ratio**: 1:12 eggshell-to-vinegar (automatic calculation)
 - **Reaction Temperature**: ~39°C (normal temperature increase)
 - **Completion Criteria**: Bubbling cessation + temperature stabilization
 - **Safety Limits**: Max 45°C, Min pH 4.0, Max weight 500g
