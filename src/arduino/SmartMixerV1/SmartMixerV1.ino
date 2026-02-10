@@ -9,7 +9,7 @@
  * 
  * Features:
  * - Weight-based control for precise vinegar dosing
- * - Automatic calibration for load cell and flow sensor
+ * - Automatic calibration for load cell
  * - CSV data logging to SD card
  * - Temperature and pH monitoring
  */
@@ -21,7 +21,6 @@
 #include "PH_CONFIG.h"
 #include "SD_CONFIG.h"
 #include "BUTTON_CONFIG.h"
-#include "FLOW_SENSOR_CONFIG.h"
 
 // Process states
 enum ProcessState {
@@ -43,7 +42,6 @@ float targetVinegarGrams = 0;
 float currentWeight = 0;
 float currentTemp = 0;
 float currentPH = 0;
-float currentVolume = 0;
 float initialWeightBeforeDispensing = 0;
 
 // Reaction monitoring variables
@@ -80,7 +78,6 @@ void setup() {
   initPH();
   initSD();
   initBUTTONS();
-  initFLOWSENSOR();
   
   // Create CSV file for data logging
   createCSVFile(csvFilename);
@@ -176,8 +173,6 @@ void handleIdleState() {
 //-----------------------------------------------------------------
 void handleCalibrationState() {
   Serial.println("\n=== CALIBRATION MODE ===");
-  Serial.println("1. Load Cell Calibration");
-  Serial.println("2. Flow Sensor Calibration");
   Serial.println("Calibrating Load Cell...");
   
   // Load cell calibration with known weight
@@ -192,28 +187,6 @@ void handleCalibrationState() {
   Serial.read();
   
   calibrateLOADCELL(100.0);
-  
-  // Flow sensor calibration
-  Serial.println("\nCalibrating Flow Sensor...");
-  Serial.println("Prepare to dispense 100ml of liquid");
-  Serial.println("Press any key to start...");
-  while (Serial.available() == 0) { delay(100); }
-  Serial.read();
-  
-  resetFlowSensor();
-  operatePUMP(true);
-  
-  Serial.println("Dispensing... Press any key when 100ml is reached");
-  while (Serial.available() == 0) {
-    delay(100);
-  }
-  Serial.read();
-  
-  operatePUMP(false);
-  
-  // Get total pulses and calibrate
-  unsigned long totalPulses = pulseCount;
-  calibrateFlowSensor(100.0, totalPulses);
   
   Serial.println("\nCalibration Complete!");
   Serial.print("Load Cell Factor: ");

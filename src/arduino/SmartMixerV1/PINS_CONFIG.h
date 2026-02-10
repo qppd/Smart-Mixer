@@ -26,9 +26,6 @@
 // SD card chip select pin
 #define SD_CS 53  // For Arduino Mega
 
-// Flow sensor pin (if used)
-#define FLOW_SENSOR_PIN 7  // Flow sensor interrupt pin
-
 // System timing
 #define SENSOR_READ_INTERVAL 5000  // Read sensors every 5 seconds
 #define MAX_REACTION_TIME 10800000 // 3 hours max (in milliseconds)
