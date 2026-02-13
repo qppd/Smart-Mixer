@@ -9,11 +9,15 @@
 void setup() {
   Serial.begin(9600);
   Serial.println("Smart Mixer");
-  //initDHT();
-  // initLCD();
+  initDHT();
+  initLCD();
+
+  clearLCD();
+  setLCDText("Smart Mixer", 0, 0);
+
   initRELAY();
-  //initLOADCELL();
-  //initSD();
+  initLOADCELL();
+  initSD();
   initBUTTONS();
 }
 
@@ -39,9 +43,9 @@ void loop() {
   // Serial.println(" --- ");
   // operateSSR(RELAY_2, true);
 
-  // Write sensor data to SD card
-  // String data = "Temp: " + String(getDHTTemperature(false)) + ", Weight: " + String(getLOADCELLWeight()) + ", pH: " + String(getPHValue());
-  // writeToSD("sensor_data.txt", data);
+  //Write sensor data to SD card
+  String data = "Temp: " + String(getDHTTemperature(false)) + ", Weight: " + String(getLOADCELLWeight()) + ", pH: " + String(getPHValue());
+  writeToSD("sensor_data.txt", data);
 
   //delay(1000);
 
