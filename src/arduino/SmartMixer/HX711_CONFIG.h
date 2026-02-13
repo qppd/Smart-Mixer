@@ -14,4 +14,12 @@ void operateHX711sleep();
 
 void operateHX711wake();
 
+void tareLOADCELL();
+
+void calibrateLOADCELL(float knownWeight);
+
+float getCalibrationFactor();
+
+void setCalibrationFactor(float factor);
+
 #endif

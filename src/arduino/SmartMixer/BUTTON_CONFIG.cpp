@@ -5,7 +5,7 @@ int inputState[BUTTON_COUNT];
 int lastInputState[BUTTON_COUNT] = { LOW, LOW, LOW };
 bool inputFlags[BUTTON_COUNT] = { LOW, LOW, LOW };
 long lastDebounceTime[BUTTON_COUNT] = { 0, 0, 0 };
-const int inputPins[BUTTON_COUNT] = { BUTTON_1, BUTTON_2, BUTTON_3 };
+const int inputPins[BUTTON_COUNT] = { BUTTON_START, BUTTON_STOP, BUTTON_CALIBRATE };
 
 bool firstReading = true;
 
@@ -15,7 +15,7 @@ void initBUTTONS() {
     digitalWrite(inputPins[i], HIGH);
   }
   delay(1000);
-  Serial.println("Push  Buttons: Initialized!");
+  Serial.println("Push Buttons: Initialized!");
 }
 
 //-----------------------------------------------------------------
@@ -55,10 +55,24 @@ void resolveInputFlags() {
   }  // loop end
 }
 
-// Placeholder for input action - implement based on your menu/navigation logic
+// Button action handler - called when button is pressed
 void inputAction(int buttonIndex) {
-  Serial.print("Button ");
-  Serial.print(buttonIndex + 1);
-  Serial.println(" pressed!");
-  // Add your button action logic here
+  // Note: Actual state transitions are handled in main loop
+  // This function is called to acknowledge button press
+  switch(buttonIndex) {
+    case 0:  // BUTTON_START
+      Serial.println("[BUTTON] START pressed!");
+      break;
+    case 1:  // BUTTON_STOP  
+      Serial.println("[BUTTON] EMERGENCY STOP pressed!");
+      break;
+    case 2:  // BUTTON_CALIBRATE
+      Serial.println("[BUTTON] CALIBRATE pressed!");
+      break;
+    default:
+      Serial.print("[BUTTON] Unknown button ");
+      Serial.print(buttonIndex);
+      Serial.println(" pressed!");
+      break;
+  }
 }

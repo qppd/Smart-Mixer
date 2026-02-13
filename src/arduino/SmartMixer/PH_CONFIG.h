@@ -3,6 +3,7 @@
 
 #include "PINS_CONFIG.h"
 
+void initPH();
 float getPHValue();
 
 #endif

@@ -3,6 +3,11 @@
 
 float calibration_value = 21.34;
 
+void initPH() {
+  pinMode(PH_PIN, INPUT);
+  Serial.println("pH Sensor: Initialized!");
+}
+
 float getPHValue() {
   int buffer_arr[10];
   int temp;

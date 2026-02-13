@@ -12,4 +12,9 @@ void initSD();
 void writeToSD(String filename, String data);
 String readFromSD(String filename);
 
+// CSV data logging functions
+void createCSVFile(String filename);
+void logDataToCSV(String filename, unsigned long time, float temp, float ph, float weight, float dispensedWeight);
+String getTimestamp();
+
 #endif
