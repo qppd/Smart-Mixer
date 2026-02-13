@@ -150,6 +150,8 @@ The Fritzing file is available at [wiring/SmartMixer.fzz](wiring/SmartMixer.fzz)
 
 ### 3D Model
 
+![Board Case 3D Model](models/Smart_Mixer_Board_Case.png)
+
 ![Board Case Cover](models/Smart_Mixer_Board_Case_Cover.png)
 
 ![Board Case Full](models/Smart_Mixer_Board_Case_Full.png)
