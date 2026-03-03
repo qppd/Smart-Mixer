@@ -95,6 +95,14 @@ void setup() {
   
   // Create CSV file for data logging
   createCSVFile(csvFilename);
+
+  // Restore pH calibration from SD if available
+  {
+    float savedSlope, savedOffset;
+    if (loadPHCalibration(savedSlope, savedOffset)) {
+      setPHCalibration(savedSlope, savedOffset);
+    }
+  }
   
   // Get baseline temperature from DS18B20
   delay(2000);
@@ -359,6 +367,7 @@ void handleCalibrationState() {
     float newSlope  = (7.0f - 4.0f) / (v7 - v4);
     float newOffset = 4.0f - newSlope * v4;
     setPHCalibration(newSlope, newOffset);
+    savePHCalibration(newSlope, newOffset);
 
     Serial.println("pH 2-point calibration applied:");
     Serial.print("  Slope : "); Serial.println(newSlope,  4);

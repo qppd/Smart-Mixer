@@ -21,4 +21,9 @@ void createCSVFile(String filename);
 void logDataToCSV(String filename, unsigned long time, float temp, float ph, float weight, float dispensedWeight);
 String getTimestamp();
 
+// pH calibration persistence
+#define PH_CAL_FILENAME "ph_cal.txt"
+void savePHCalibration(float slope, float offset);
+bool loadPHCalibration(float &slope, float &offset);
+
 #endif

@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "SD_CONFIG.h"
+#include "PH_CONFIG.h"
 
 File myFile;
 const int chipSelect = SD_CS;
@@ -68,7 +69,6 @@ void createCSVFile(String filename) {
 void logDataToCSV(String filename, unsigned long time, float temp, float ph, float weight, float dispensedWeight) {
   myFile = SD.open(filename.c_str(), FILE_WRITE);
   if (myFile) {
-    // Format: time,temp,ph,weight,volume
     myFile.print(time / 1000);  // Convert ms to seconds
     myFile.print(",");
     myFile.print(temp, 2);
@@ -98,6 +98,66 @@ void logDataToCSV(String filename, unsigned long time, float temp, float ph, flo
     sdLastWriteOk = false;
     Serial.println("Error writing to CSV: " + filename);
   }
+}
+
+//-----------------------------------------------------------------
+// Save pH calibration slope + offset to SD card (overwrites).
+// File format (ph_cal.txt):
+//   Line 1: slope   (e.g. "-5.7000")
+//   Line 2: offset  (e.g. "21.3400")
+//-----------------------------------------------------------------
+void savePHCalibration(float slope, float offset) {
+  // Remove existing file so we overwrite, not append
+  if (SD.exists(PH_CAL_FILENAME)) {
+    SD.remove(PH_CAL_FILENAME);
+  }
+  myFile = SD.open(PH_CAL_FILENAME, FILE_WRITE);
+  if (myFile) {
+    myFile.println(slope,  4);
+    myFile.println(offset, 4);
+    myFile.close();
+    Serial.println("pH calibration saved to SD.");
+    Serial.print(  "  Slope : "); Serial.println(slope,  4);
+    Serial.print(  "  Offset: "); Serial.println(offset, 4);
+  } else {
+    Serial.println("ERROR: Could not save pH calibration to SD!");
+  }
+}
+
+//-----------------------------------------------------------------
+// Load pH calibration from SD card.
+// Returns true and sets slope/offset if file exists and is valid.
+// Returns false (leaves slope/offset unchanged) on any error.
+//-----------------------------------------------------------------
+bool loadPHCalibration(float &slope, float &offset) {
+  if (!SD.exists(PH_CAL_FILENAME)) {
+    Serial.println("pH cal file not found - using defaults.");
+    return false;
+  }
+  myFile = SD.open(PH_CAL_FILENAME);
+  if (!myFile) {
+    Serial.println("ERROR: Cannot open pH cal file.");
+    return false;
+  }
+  String slopeLine  = myFile.readStringUntil('\n');
+  String offsetLine = myFile.readStringUntil('\n');
+  myFile.close();
+
+  slopeLine.trim();
+  offsetLine.trim();
+
+  if (slopeLine.length() == 0 || offsetLine.length() == 0) {
+    Serial.println("pH cal file empty or corrupt.");
+    return false;
+  }
+
+  slope  = slopeLine.toFloat();
+  offset = offsetLine.toFloat();
+
+  Serial.println("pH calibration loaded from SD.");
+  Serial.print(  "  Slope : "); Serial.println(slope,  4);
+  Serial.print(  "  Offset: "); Serial.println(offset, 4);
+  return true;
 }
 
 //-----------------------------------------------------------------
