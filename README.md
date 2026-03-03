@@ -43,7 +43,7 @@ This project implements a complete automated synthesis system for calcium acetat
 - **Complete Process Automation**: From grinding to final product with minimal user intervention
 
 ### Real-time Monitoring
-- **Temperature Sensing**: DHT22 sensor tracking reaction temperature (target: ~39°C)
+- **Temperature Sensing**: DS18B20 sensor tracking reaction temperature (target: ~39°C)
 - **Weight Measurement**: HX711 load cell for precise grinding and ratio control
 - **pH Level Detection**: Analog pH sensor monitoring reaction progress
 - **Serial Output**: Real-time data logging and display
@@ -115,7 +115,7 @@ END (Fertilizer Ready)
 
 ### Core Components
 - **Arduino Board** (Uno, Mega, or compatible)
-- **DHT22 Temperature & Humidity Sensor**
+- **DS18B20 Temperature Sensor**
 - **HX711 Load Cell Amplifier** + Load Cell (for weight measurement)
 - **Analog pH Sensor Module**
 - **I2C LCD Display (16x2 or 20x4)**
@@ -132,7 +132,7 @@ END (Fertilizer Ready)
 
 ### Pin Configuration
 ```
-DHT22 Sensor      -> Pin 2
+DS18B20 Sensor    -> Pin 2 (DATA; VCC -> 3.3V; GND -> GND; 4.7kΩ pull-up resistor between DATA and VCC)
 HX711 DT          -> Pin 4
 HX711 SCK         -> Pin 3
 pH Sensor         -> A0
@@ -164,7 +164,8 @@ The Fritzing file is available at [wiring/SmartMixer.fzz](wiring/SmartMixer.fzz)
 
 ### Required Libraries
 Install via Arduino Library Manager:
-- `DHT sensor library` by Adafruit
+- `OneWire` by Paul Stoffregen
+- `DallasTemperature` by Miles Burton
 - `LiquidCrystal_I2C` by Marco Schwartz
 - `HX711` by Bogdan Necula
 
@@ -183,7 +184,8 @@ Install via Arduino Library Manager:
 3. **Install Required Libraries**
    - Go to `Sketch > Include Library > Manage Libraries`
    - Search and install:
-     - DHT sensor library
+     - OneWire
+     - DallasTemperature
      - LiquidCrystal_I2C
      - HX711
 
@@ -235,7 +237,7 @@ if (getLOADCELLWeight() >= targetWeight) {
 }
 
 // Monitor reaction completion
-if (getPHValue() >= 4.5 && getDHTTemperature(false) >= 38.0) {
+if (getPHValue() >= 4.5 && getDS18B20Temperature(false) >= 38.0) {
     // Reaction complete - stop all operations
     operateRELAY(RELAY_PUMP, false);
 }
@@ -260,7 +262,7 @@ Smart-Mixer/
         └── SmartMixer/
             ├── SmartMixer.ino          # Main Arduino sketch
             ├── PINS_CONFIG.h           # Hardware pin definitions
-            ├── DHT_CONFIG.h/.cpp       # Temperature sensor
+            ├── DS18B20_CONFIG.h/.cpp   # Temperature sensor (DS18B20)
             ├── HX711_CONFIG.h/.cpp     # Load cell amplifier
             ├── PH_CONFIG.h/.cpp        # pH sensor
             ├── LCD_CONFIG.h/.cpp       # LCD display
@@ -303,7 +305,7 @@ Edit `PINS_CONFIG.h` to modify hardware connections:
 ```
 
 ### Sensor Parameters
-- **DHT Type**: Currently set to DHT22 (configurable)
+- **DS18B20**: Single-wire digital temperature sensor on Pin 2
 - **pH Sampling**: 10 readings with median filtering for noise reduction
 - **Weight Averaging**: 10-sample moving average for stability
 - **Button Debouncing**: 50ms debounce delay
@@ -313,9 +315,8 @@ Edit `PINS_CONFIG.h` to modify hardware connections:
 
 ### Temperature Functions
 ```cpp
-void initDHT();                           // Initialize DHT sensor
-float getDHTTemperature(boolean fahrenheit); // Get temperature
-float getDHTHumidity();                   // Get humidity
+void initDS18B20();                              // Initialize DS18B20 sensor
+float getDS18B20Temperature(boolean fahrenheit); // Get temperature (-1 on error)
 ```
 
 ### Weight Functions

@@ -1,8 +1,8 @@
 #ifndef PINS_CONFIG_H
 #define PINS_CONFIG_H
 
-// Temperature sensor pin (DHT22)
-#define TEMP_SENSOR_PIN 2  // DHT22 sensor
+// Temperature sensor pin (DS18B20)
+#define TEMP_SENSOR_PIN 2  // DS18B20 sensor
 
 // HX711 load cell amplifier pins
 #define HX711_DT 4

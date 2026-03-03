@@ -14,7 +14,7 @@
  * - Temperature and pH monitoring
  */
 
-#include "DHT_CONFIG.h"
+#include "DS18B20_CONFIG.h"
 #include "LCD_CONFIG.h"
 #include "RELAY_CONFIG.h"
 #include "HX711_CONFIG.h"
@@ -59,7 +59,7 @@ unsigned long lastDataLog = 0;
 bool emergencyStop = false;
 
 // Manual test controls
-bool dhtTestActive = false;
+bool tempTestActive = false;
 bool loadcellTestActive = false;
 bool lcdTestActive = false;
 bool phTestActive = false;
@@ -84,7 +84,7 @@ void setup() {
   Serial.println("========================================");
   
   // Initialize all modules
-  initDHT();
+  initDS18B20();
   // initLCD();  // Uncomment if using LCD
   initRELAY();
   initLOADCELL();
@@ -95,9 +95,9 @@ void setup() {
   // Create CSV file for data logging
   createCSVFile(csvFilename);
   
-  // Get baseline temperature from DHT22
+  // Get baseline temperature from DS18B20
   delay(2000);
-  baselineTemp = getDHTTemperature(false);
+  baselineTemp = getDS18B20Temperature(false);
   if (baselineTemp < 0) baselineTemp = 25.0;  // Default if sensor error
   
   Serial.print("Baseline Temperature: ");
@@ -107,7 +107,7 @@ void setup() {
   Serial.println("System Ready!");
   Serial.println("Press START button to begin");
   Serial.println("Press CALIBRATE button for calibration mode");
-  Serial.println("Manual commands: relay1:on/off, relay2:on/off, dht:1/0, loadcell:1/0, lcd:1/0, ph:1/0, sd:1/0");
+  Serial.println("Manual commands: relay1:on/off, relay2:on/off, temp:1/0, loadcell:1/0, lcd:1/0, ph:1/0, sd:1/0");
   
   currentState = STATE_IDLE;
 }
@@ -198,12 +198,12 @@ void handleSerialCommands() {
   } else if (command == "relay2:off") {
     operatePUMP(false);
     Serial.println("[Manual] Relay2 OFF (pump)");
-  } else if (command == "dht:1") {
-    dhtTestActive = true;
-    Serial.println("[Manual] DHT22 test started");
-  } else if (command == "dht:0") {
-    dhtTestActive = false;
-    Serial.println("[Manual] DHT22 test stopped");
+  } else if (command == "temp:1") {
+    tempTestActive = true;
+    Serial.println("[Manual] DS18B20 test started");
+  } else if (command == "temp:0") {
+    tempTestActive = false;
+    Serial.println("[Manual] DS18B20 test stopped");
   } else if (command == "loadcell:1") {
     loadcellTestActive = true;
     Serial.println("[Manual] Load cell test started");
@@ -243,19 +243,16 @@ void handleSerialCommands() {
 //-----------------------------------------------------------------
 void runManualTests() {
   unsigned long now = millis();
-  bool shouldRunSensors = (dhtTestActive || loadcellTestActive || lcdTestActive || phTestActive) && (now - lastManualTestRun >= MANUAL_TEST_INTERVAL);
+  bool shouldRunSensors = (tempTestActive || loadcellTestActive || lcdTestActive || phTestActive) && (now - lastManualTestRun >= MANUAL_TEST_INTERVAL);
 
   if (shouldRunSensors) {
     lastManualTestRun = now;
 
-    if (dhtTestActive) {
-      float temp = getDHTTemperature(false);
-      float humidity = getDHTHumidity();
-      Serial.print("[DHT] Temp: ");
+    if (tempTestActive) {
+      float temp = getDS18B20Temperature(false);
+      Serial.print("[DS18B20] Temp: ");
       Serial.print(temp);
-      Serial.print(" C, Humidity: ");
-      Serial.print(humidity);
-      Serial.println(" %");
+      Serial.println(" C");
     }
 
     if (loadcellTestActive) {
@@ -279,7 +276,7 @@ void runManualTests() {
       clearLCD();
       setLCDText("LCD TEST", 0, 0);
       setLCDText("T:" , 0, 1);
-      setLCDText(getDHTTemperature(false), 2, 1);
+      setLCDText(getDS18B20Temperature(false), 2, 1);
       setLCDText("W:" , 0, 2);
       setLCDText(getLOADCELLWeight(), 2, 2);
       setLCDText("PH:", 0, 3);
@@ -490,7 +487,7 @@ void handleMonitoringState() {
   
   // Read sensors periodically
   if (millis() - lastSensorRead >= SENSOR_READ_INTERVAL) {
-    currentTemp = getDHTTemperature(false);
+    currentTemp = getDS18B20Temperature(false);
     currentPH = getPHValue();
     currentWeight = getLOADCELLWeight();
     
