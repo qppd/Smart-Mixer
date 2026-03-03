@@ -3,6 +3,10 @@
 
 #include "PINS_CONFIG.h"
 
+// State tracking – readable by any module to check actuator state
+extern bool grinderState;
+extern bool pumpState;
+
 void initRELAY();
 
 void operateRELAY(uint16_t RELAY, boolean OPENED);

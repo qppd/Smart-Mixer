@@ -8,6 +8,10 @@
 extern File myFile;
 extern const int chipSelect;
 
+// Set to true after a successful SD write, false on failure.
+// Used by LCD to display logging status (SD:OK / SD:ERR).
+extern bool sdLastWriteOk;
+
 void initSD();
 void writeToSD(String filename, String data);
 String readFromSD(String filename);

@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "BUTTON_CONFIG.h"
+#include "LCD_CONFIG.h"
 
 int inputState[BUTTON_COUNT];
 int lastInputState[BUTTON_COUNT] = { LOW, LOW, LOW };
@@ -57,6 +58,9 @@ void resolveInputFlags() {
 
 // Button action handler - called when button is pressed
 void inputAction(int buttonIndex) {
+  // Flash button name on row 3 of the LCD
+  lcdDisplayButtonFeedback(buttonIndex);
+
   // Note: Actual state transitions are handled in main loop
   // This function is called to acknowledge button press
   switch(buttonIndex) {

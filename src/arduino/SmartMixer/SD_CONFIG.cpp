@@ -3,6 +3,7 @@
 
 File myFile;
 const int chipSelect = SD_CS;
+bool sdLastWriteOk   = false;
 
 void initSD() {
   Serial.print("Initializing SD card...");
@@ -18,8 +19,10 @@ void writeToSD(String filename, String data) {
   if (myFile) {
     myFile.println(data);
     myFile.close();
+    sdLastWriteOk = true;
     Serial.println("Write done to " + filename);
   } else {
+    sdLastWriteOk = false;
     Serial.println("error opening " + filename);
   }
 }
@@ -77,6 +80,7 @@ void logDataToCSV(String filename, unsigned long time, float temp, float ph, flo
     myFile.println(dispensedWeight, 2);
     
     myFile.close();
+    sdLastWriteOk = true;
     
     // Optional: Print to serial for debugging
     Serial.print("Logged: ");
@@ -91,6 +95,7 @@ void logDataToCSV(String filename, unsigned long time, float temp, float ph, flo
     Serial.print(dispensedWeight);
     Serial.println("g");
   } else {
+    sdLastWriteOk = false;
     Serial.println("Error writing to CSV: " + filename);
   }
 }

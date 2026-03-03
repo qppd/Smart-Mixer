@@ -17,6 +17,7 @@ An automated Arduino-based system that grinds eggshells to precise weights and r
 - [Project Structure](#-project-structure)
 - [Configuration](#-configuration)
 - [API Reference](#-api-reference)
+- [LCD Integration](#lcd-integration)
 - [Contributing](#-contributing)
 - [License](#-license)
 - [Author](#-author)
@@ -243,13 +244,8 @@ if (getPHValue() >= 4.5 && getDS18B20Temperature(false) >= 38.0) {
 }
 ```
 
-### LCD Display (Optional)
-Uncomment LCD initialization in `setup()`:
-```cpp
-initLCD();
-setLCDText("Fertilizer", 0, 0);
-setLCDText("Production", 0, 1);
-```
+### LCD Display
+The LCD is always active from startup. It automatically shows the appropriate screen for each process state. See the [LCD Integration](#lcd-integration) section for full layout details.
 
 ## Project Structure
 
@@ -309,7 +305,140 @@ Edit `PINS_CONFIG.h` to modify hardware connections:
 - **pH Sampling**: 10 readings with median filtering for noise reduction
 - **Weight Averaging**: 10-sample moving average for stability
 - **Button Debouncing**: 50ms debounce delay
-- **LCD Refresh Rate**: 500ms update interval
+- **LCD Refresh Rate**: 500ms non-blocking update interval (`LCD_UPDATE_INTERVAL`)
+
+## LCD Integration
+
+The Smart Mixer uses an **I2C LCD (16 columns × 4 rows)** at address `0x27` as the primary user interface, showing real-time sensor data, process status, and menu prompts throughout every stage of operation. The LCD is always initialised in `setup()` and never requires a manual enable command.
+
+### Display Layout by Process State
+
+#### Idle / Splash Screen
+```
+┌────────────────┐
+│◎ Smart Mixer   │  Row 0 – mixer icon + project title
+│Ca-Acetate Synth│  Row 1 – process description
+│→START  →CALIB  │  Row 2 – button hints with arrow icons
+│  System Ready  │  Row 3 – system status
+└────────────────┘
+```
+
+#### Calibration Mode
+```
+┌────────────────┐
+│== CALIBRATE == │  Row 0 – mode header
+│Remove weight!  │  Row 1 – current step prompt (updates per step)
+│Factor:22500.3  │  Row 2 – calibration factor (live)
+│Press to confirm│  Row 3 – action hint
+└────────────────┘
+```
+Steps cycle: `Remove weight!` → `Taring scale...` → `Place 100g...` → `Calibrating...` → `Done!`
+
+#### Target Input
+```
+┌────────────────┐
+│== SET TARGET ==│  Row 0 – mode header
+│Egg: 50.0g      │  Row 1 – confirmed eggshell target
+│Vin:600.0g      │  Row 2 – auto-calculated vinegar (1:12 ratio)
+│ Waiting input..│  Row 3 – status
+└────────────────┘
+```
+
+#### Grinding Stage
+```
+┌────────────────┐
+│== GRINDING ==  │  Row 0 – stage header
+│Cur:45.2g/50.0g │  Row 1 – current weight / target weight
+│Progress:  90%  │  Row 2 – completion percentage
+│GND:ON  [STOP]  │  Row 3 – grinder state + stop hint
+└────────────────┘
+```
+
+#### Dispensing Stage
+```
+┌────────────────┐
+│=  DISPENSING  =│  Row 0 – stage header
+│D:45.2g/600.0g  │  Row 1 – dispensed / target vinegar
+│PID Out:   85%  │  Row 2 – PID controller output percentage
+│PMP:ON  [STOP]  │  Row 3 – pump state + stop hint
+└────────────────┘
+```
+
+#### Reaction Monitoring Dashboard
+```
+┌────────────────┐
+│T:25.4°C pH:7.20│  Row 0 – temperature (°) + pH
+│W: 720g  D: 600g│  Row 1 – total weight + dispensed vinegar
+│GND:OFF PMP:OFF │  Row 2 – actuator states
+│00:05:30 Active │  Row 3 – elapsed time HH:MM:SS + phase
+└────────────────┘
+```
+The degree symbol `°` is rendered as a custom CGRAM character for crisp display.
+
+#### Process Complete
+```
+┌────────────────┐
+│✓ COMPLETE!     │  Row 0 – check icon + completion
+│T:24.5°C pH:6.80│  Row 1 – final temperature + pH
+│W: 720g  SD:OK  │  Row 2 – final weight + SD card status
+│  Press START   │  Row 3 – restart hint
+└────────────────┘
+```
+`SD:OK` or `SD:ERR` reflects the result of the last CSV write.
+
+#### Error Screen (blinking alert)
+```
+┌────────────────┐
+│▲ !! ERROR !!   │  Row 0 – blinking alert (600 ms period)
+│Check sensors!  │  Row 1 – error description
+│Actuators: OFF  │  Row 2 – safety confirmation
+│Check & Restart │  Row 3 – corrective hint
+└────────────────┘
+```
+Row 0 blinks on/off every 600 ms using a non-blocking `millis()` timer.
+
+#### Emergency Stop
+```
+┌────────────────┐
+│▲EMERGENCY STOP!│  Row 0 – alert icon + label
+│Grinder:OFF     │  Row 1 – grinder state
+│Pump:   OFF     │  Row 2 – pump state
+│  Press START   │  Row 3 – restart hint
+└────────────────┘
+```
+
+#### Button Feedback Flash
+When any button is pressed, row 3 instantly updates for ~500 ms:
+- START → `→START pressed! `
+- STOP  → `→STOP pressed!  `
+- CALIB → `→CALIB pressed! `
+
+The next scheduled display refresh overwrites this automatically, creating a brief visual acknowledgement without any blocking delay.
+
+### Custom CGRAM Characters
+
+| Index | Symbol | Usage |
+|-------|--------|-------|
+| `CHAR_DEGREE`  (0) | `°` | Temperature unit in monitoring/complete screens |
+| `CHAR_ALERT`   (1) | `▲` | Error screen row 0 and emergency stop |
+| `CHAR_CHECK`   (2) | `✓` | Complete screen row 0 |
+| `CHAR_ARROW_R` (3) | `→` | Idle button hints and button feedback |
+| `CHAR_MIXER`   (4) | `◎` | Idle splash screen title |
+
+### Non-Blocking Refresh Strategy
+
+All periodic LCD updates are gated by `lcdShouldUpdate()`, which returns `true` at most once per `LCD_UPDATE_INTERVAL` (500 ms). This ensures:
+- No flicker from redundant writes
+- Sensor reads and actuator control are never delayed by display logic
+- Button feedback bypasses the gate for immediate visual response
+
+### Adding New Display Content
+
+To add readings from a future sensor:
+1. Add a new display function in `LCD_CONFIG.cpp` following the existing patterns.
+2. Declare the prototype in `LCD_CONFIG.h`.
+3. Call the function from the relevant state handler in `SmartMixer.ino` inside an `if (lcdShouldUpdate())` block.
+
 
 ## API Reference
 
@@ -334,10 +463,27 @@ float getPHValue();                       // Get filtered pH reading
 
 ### LCD Functions
 ```cpp
-void initLCD();                           // Initialize LCD
-void clearLCD();                          // Clear display
-void setLCDText(String text, int x, int y); // Display text
-void setLCDText(float value, int x, int y); // Display number
+void initLCD();                                          // Init LCD, load custom chars
+void clearLCD();                                         // Clear all rows
+void setLCDText(String text,  int col, int row);         // Write text at position
+void setLCDText(float  value, int col, int row);         // Write float at position
+bool lcdShouldUpdate();                                  // Non-blocking 500 ms gate
+
+// State-specific full-screen display functions
+void lcdDisplayIdle();                                   // Splash / idle screen
+void lcdDisplayCalibration(const char* step, float cf); // Calibration prompts
+void lcdDisplayInputTarget(float eggG, float vinG);     // Target weight input
+void lcdDisplayGrinding(float cur, float tgt, bool on); // Grinding progress
+void lcdDisplayDispensing(float disp, float tgt,
+                          bool on, int pidPct);          // Dispensing progress
+void lcdDisplayMonitoring(float temp, float ph,
+  float weight, float dispensed,
+  bool gOn, bool pOn, unsigned long elapsedMs);          // Reaction dashboard
+void lcdDisplayComplete(float wt, float t,
+                        float ph, bool sdOk);            // Completion summary
+void lcdDisplayError(const char* msg);                   // Blinking error screen
+void lcdDisplayEmergencyStop();                          // E-stop overlay
+void lcdDisplayButtonFeedback(int buttonIndex);          // Brief button flash
 ```
 
 ### Relay Functions

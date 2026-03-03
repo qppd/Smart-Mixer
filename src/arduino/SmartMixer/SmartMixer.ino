@@ -19,6 +19,7 @@
 #include "RELAY_CONFIG.h"
 #include "HX711_CONFIG.h"
 #include "PH_CONFIG.h"
+#include "PID_CONFIG.h"
 #include "SD_CONFIG.h"
 #include "BUTTON_CONFIG.h"
 
@@ -64,7 +65,6 @@ bool loadcellTestActive = false;
 bool lcdTestActive = false;
 bool phTestActive = false;
 bool sdTestActive = false;
-bool lcdInitialized = false;
 unsigned long lastManualTestRun = 0;
 unsigned long lastSDTestRun = 0;
 const unsigned long MANUAL_TEST_INTERVAL = 1000;
@@ -85,10 +85,11 @@ void setup() {
   
   // Initialize all modules
   initDS18B20();
-  // initLCD();  // Uncomment if using LCD
+  initLCD();          // I2C 16×4 LCD always active
   initRELAY();
   initLOADCELL();
   initPH();
+  initPID();
   initSD();
   initBUTTONS();
   
@@ -110,6 +111,7 @@ void setup() {
   Serial.println("Manual commands: relay1:on/off, relay2:on/off, temp:1/0, loadcell:1/0, lcd:1/0, ph:1/0, sd:1/0");
   
   currentState = STATE_IDLE;
+  lcdDisplayIdle();   // Show splash on startup
 }
 
 //-----------------------------------------------------------------
@@ -212,13 +214,10 @@ void handleSerialCommands() {
     Serial.println("[Manual] Load cell test stopped");
   } else if (command == "lcd:1") {
     lcdTestActive = true;
-    if (!lcdInitialized) {
-      initLCD();
-      lcdInitialized = true;
-    }
     Serial.println("[Manual] LCD test started");
   } else if (command == "lcd:0") {
     lcdTestActive = false;
+    lcdDisplayIdle();  // Return to idle screen when test stops
     Serial.println("[Manual] LCD test stopped");
   } else if (command == "ph:1") {
     phTestActive = true;
@@ -269,18 +268,12 @@ void runManualTests() {
     }
 
     if (lcdTestActive) {
-      if (!lcdInitialized) {
-        initLCD();
-        lcdInitialized = true;
-      }
-      clearLCD();
-      setLCDText("LCD TEST", 0, 0);
-      setLCDText("T:" , 0, 1);
-      setLCDText(getDS18B20Temperature(false), 2, 1);
-      setLCDText("W:" , 0, 2);
-      setLCDText(getLOADCELLWeight(), 2, 2);
-      setLCDText("PH:", 0, 3);
-      setLCDText(getPHValue(), 3, 3);
+      // Show full sensor dashboard using the monitoring display
+      float testTemp   = getDS18B20Temperature(false);
+      float testWeight = getLOADCELLWeight();
+      float testPH     = getPHValue();
+      lcdDisplayMonitoring(testTemp, testPH, testWeight, 0.0f,
+                           grinderState, pumpState, millis());
     }
   }
 
@@ -295,6 +288,11 @@ void runManualTests() {
 //STATE: IDLE------------------------------------------------------
 //-----------------------------------------------------------------
 void handleIdleState() {
+  // Refresh idle splash at most every LCD_UPDATE_INTERVAL ms
+  if (lcdShouldUpdate()) {
+    lcdDisplayIdle();
+  }
+
   if (inputFlags[0]) {  // START button
     Serial.println("\n=== Starting Process ===");
     currentState = STATE_INPUT_TARGET;
@@ -309,23 +307,32 @@ void handleCalibrationState() {
   Serial.println("\n=== CALIBRATION MODE ===");
   Serial.println("Calibrating Load Cell...");
   
-  // Load cell calibration with known weight
+  // Step 1: tare
+  lcdDisplayCalibration("Remove weight!", 0.0);
   Serial.println("Place empty container and press any key...");
   while (Serial.available() == 0) { delay(100); }
   Serial.read();
   
+  lcdDisplayCalibration("Taring scale...", 0.0);
   tareLOADCELL();
   
+  // Step 2: place known weight
+  lcdDisplayCalibration("Place 100g...", 0.0);
   Serial.println("Place 100g weight and press any key...");
   while (Serial.available() == 0) { delay(100); }
   Serial.read();
   
+  lcdDisplayCalibration("Calibrating...", 0.0);
   calibrateLOADCELL(100.0);
+  
+  float factor = getCalibrationFactor();
+  lcdDisplayCalibration("Done!", factor);
   
   Serial.println("\nCalibration Complete!");
   Serial.print("Load Cell Factor: ");
-  Serial.println(getCalibrationFactor());
+  Serial.println(factor);
   
+  delay(2000);  // show result for 2 s before returning
   currentState = STATE_IDLE;
 }
 
@@ -336,6 +343,8 @@ void handleInputTargetState() {
   Serial.println("\n=== Input Target Weight ===");
   Serial.print("Enter target eggshell weight in grams (default 50g): ");
   
+  lcdDisplayInputTarget(targetEggshellGrams, targetEggshellGrams * vinegarRatio);
+
   // Wait for serial input with timeout
   unsigned long startWait = millis();
   String input = "";
@@ -361,6 +370,9 @@ void handleInputTargetState() {
   Serial.print(targetVinegarGrams);
   Serial.println(" g");
   
+  // Update LCD with confirmed values
+  lcdDisplayInputTarget(targetEggshellGrams, targetVinegarGrams);
+  
   // Tare the scale
   tareLOADCELL();
   
@@ -384,14 +396,14 @@ void handleGrindingState() {
   // Read current weight
   currentWeight = getLOADCELLWeight();
   
-  // Display progress
-  if (millis() - lastSensorRead >= 1000) {
+  // Non-blocking LCD + serial update
+  if (lcdShouldUpdate()) {
+    lcdDisplayGrinding(currentWeight, targetEggshellGrams, grinderState);
     Serial.print("Current weight: ");
     Serial.print(currentWeight);
     Serial.print(" g / ");
     Serial.print(targetEggshellGrams);
     Serial.println(" g");
-    lastSensorRead = millis();
   }
   
   // Check if target reached
@@ -401,6 +413,7 @@ void handleGrindingState() {
     Serial.print("Final weight: ");
     Serial.print(currentWeight);
     Serial.println(" g");
+    lcdDisplayGrinding(currentWeight, targetEggshellGrams, false);
     
     grindingStarted = false;
     currentState = STATE_DISPENSING;
@@ -410,6 +423,7 @@ void handleGrindingState() {
   if (currentWeight > targetEggshellGrams * 1.1) {
     operateGRINDER(false);
     Serial.println("Warning: Exceeded target weight!");
+    lcdDisplayGrinding(currentWeight, targetEggshellGrams, false);
     grindingStarted = false;
     currentState = STATE_DISPENSING;
   }
@@ -442,6 +456,22 @@ void handleDispensingState() {
   // Read current weight
   currentWeight = getLOADCELLWeight();
   float dispensedWeight = currentWeight - initialWeight;
+
+  // Compute PID and derive percentage for LCD
+  computePID();
+  int pidPct = (int)(outputPump * 100.0f / 255.0f);
+  
+  // Non-blocking LCD + serial update
+  if (lcdShouldUpdate()) {
+    lcdDisplayDispensing(dispensedWeight, targetVinegarGrams, pumpState, pidPct);
+    Serial.print("Current weight: ");
+    Serial.print(currentWeight);
+    Serial.print(" g (Dispensed: ");
+    Serial.print(dispensedWeight);
+    Serial.print(" g / ");
+    Serial.print(targetVinegarGrams);
+    Serial.println(" g)");
+  }
   
   // Check if target reached
   if (dispensedWeight >= targetVinegarGrams) {
@@ -453,22 +483,11 @@ void handleDispensingState() {
     Serial.print("Dispensed: ");
     Serial.print(dispensedWeight);
     Serial.println(" g");
+    lcdDisplayDispensing(dispensedWeight, targetVinegarGrams, false, 0);
     
     dispensingStarted = false;
     processStartTime = millis();
     currentState = STATE_MONITORING;
-  }
-  
-  // Display progress
-  if (millis() - lastSensorRead >= 1000) {
-    Serial.print("Current weight: ");
-    Serial.print(currentWeight);
-    Serial.print(" g (Dispensed: ");
-    Serial.print(dispensedWeight);
-    Serial.print(" g / ");
-    Serial.print(targetVinegarGrams);
-    Serial.println(" g)");
-    lastSensorRead = millis();
   }
 }
 
@@ -495,6 +514,11 @@ void handleMonitoringState() {
     unsigned long elapsedTime = millis() - processStartTime;
     float dispensedVinegarWeight = currentWeight - initialWeightBeforeDispensing;
     logDataToCSV(csvFilename, elapsedTime, currentTemp, currentPH, currentWeight, dispensedVinegarWeight);
+
+    // Update LCD dashboard (sensor data already fresh)
+    lcdDisplayMonitoring(currentTemp, currentPH, currentWeight,
+                         dispensedVinegarWeight, grinderState, pumpState,
+                         elapsedTime);
     
     // Check reaction status
     float tempDiff = currentTemp - baselineTemp;
@@ -568,6 +592,9 @@ void handleCompleteState() {
   Serial.println("Data saved to SD card: " + csvFilename);
   Serial.println("\nPress START to begin new process");
   
+  // Show completion screen (sdLastWriteOk reflects last SD write result)
+  lcdDisplayComplete(currentWeight, currentTemp, currentPH, sdLastWriteOk);
+  
   currentState = STATE_IDLE;
 }
 
@@ -582,8 +609,10 @@ void handleErrorState() {
   operateGRINDER(false);
   operatePUMP(false);
   
+  // Blink error screen indefinitely (non-blocking blink via millis)
   while (true) {
-    delay(1000);
+    lcdDisplayError("Check sensors!");
+    delay(100);
   }
 }
 
@@ -596,6 +625,9 @@ void emergencyStopProcedure() {
   // Immediately stop all motors
   operateGRINDER(false);
   operatePUMP(false);
+  
+  // Show emergency stop screen on LCD
+  lcdDisplayEmergencyStop();
   
   // Log final state
   Serial.println("System stopped by user");

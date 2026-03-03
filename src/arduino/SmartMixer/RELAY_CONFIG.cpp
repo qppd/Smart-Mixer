@@ -1,6 +1,10 @@
 #include <Arduino.h>
 #include "RELAY_CONFIG.h"
 
+// Global actuator state flags – updated by every operate* call
+bool grinderState = false;
+bool pumpState    = false;
+
 //-----------------------------------------------------------------
 //FUNCTION FOR SETTING RELAY PIN MODE------------------------------
 //-----------------------------------------------------------------
@@ -33,6 +37,7 @@ void operateRELAY(uint16_t RELAY, boolean OPENED) {
 //FUNCTION FOR OPERATING GRINDER MOTOR-----------------------------
 //-----------------------------------------------------------------
 void operateGRINDER(boolean OPENED) {
+  grinderState = OPENED;
   if (OPENED) {
     digitalWrite(RELAY_GRINDER, HIGH);
     Serial.println("Grinder: ON");
@@ -48,6 +53,7 @@ void operateGRINDER(boolean OPENED) {
 //FUNCTION FOR OPERATING PUMP (ON/OFF)-----------------------------
 //-----------------------------------------------------------------
 void operatePUMP(boolean OPENED) {
+  pumpState = OPENED;
   if (OPENED) {
     digitalWrite(RELAY_PUMP, HIGH);
     Serial.println("Pump: ON");
