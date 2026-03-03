@@ -320,16 +320,32 @@ void handleCalibrationState() {
   Serial.println("\n-- Step 1: Load Cell Calibration --");
 
   lcdDisplayCalibration("Remove weight!", 0.0);
-  Serial.println("Remove all weight, then press any serial key...");
-  while (Serial.available() == 0) { delay(100); }
+  Serial.println("Remove all weight, then press any serial key or STOP button to abort...");
+  while (Serial.available() == 0) {
+    setInputFlags();
+    if (inputFlags[1]) {  // STOP = emergency stop, abort calibration
+      inputFlags[1] = LOW;
+      emergencyStopProcedure();
+      return;
+    }
+    delay(100);
+  }
   Serial.read();
 
   lcdDisplayCalibration("Taring scale...", 0.0);
   tareLOADCELL();
 
   lcdDisplayCalibration("Place 100g...", 0.0);
-  Serial.println("Place 100 g reference weight, then press any serial key...");
-  while (Serial.available() == 0) { delay(100); }
+  Serial.println("Place 100 g reference weight, then press any serial key or STOP button to abort...");
+  while (Serial.available() == 0) {
+    setInputFlags();
+    if (inputFlags[1]) {  // STOP = emergency stop, abort calibration
+      inputFlags[1] = LOW;
+      emergencyStopProcedure();
+      return;
+    }
+    delay(100);
+  }
   Serial.read();
 
   lcdDisplayCalibration("Calibrating...", 0.0);
@@ -345,13 +361,13 @@ void handleCalibrationState() {
 
   //-----------------------------------------------------------------
   // PART 2: pH Sensor 2-Point Calibration (Buffer 4 then Buffer 7)
-  // Buttons: START(+0.1 offset)  STOP(-0.1 offset)  CALIB(confirm)
+  // Buttons: START(+0.1 offset)  STOP(EMERGENCY STOP / abort)  CALIB(confirm)
   // Auto-completes when |reading - buffer| <= 0.05
   //-----------------------------------------------------------------
   Serial.println("\n-- Step 2: pH Sensor 2-Point Calibration --");
   Serial.println("  Button mapping during pH calibration:");
   Serial.println("    START   = offset +0.1");
-  Serial.println("    STOP    = offset -0.1");
+  Serial.println("    STOP    = EMERGENCY STOP (abort calibration)");
   Serial.println("    CALIB   = confirm / skip");
 
   // Drain stale button flags before entering interactive loops
@@ -360,7 +376,9 @@ void handleCalibrationState() {
   inputFlags[2] = LOW;
 
   float v4 = calibratePHBuffer(4.0f, "== PH BUF 4.0 ==");
+  if (v4 < 0.0f) return;  // Emergency stop was triggered during calibration
   float v7 = calibratePHBuffer(7.0f, "== PH BUF 7.0 ==");
+  if (v7 < 0.0f) return;  // Emergency stop was triggered during calibration
 
   // Compute proper 2-point slope + offset from the two locked voltages
   if (abs(v7 - v4) > 0.01f) {
@@ -392,7 +410,7 @@ float calibratePHBuffer(float targetPH, const char* title) {
   Serial.print("\n  Dip probe in pH ");
   Serial.print(targetPH, 1);
   Serial.println(" buffer solution.");
-  Serial.println("  START(+0.1) | STOP(-0.1) | CALIB(confirm)");
+  Serial.println("  START(+0.1) | STOP(EMERGENCY STOP) | CALIB(confirm)");
   Serial.println("  Calibration auto-completes when reading matches buffer.");
 
   // Drain stale button flags
@@ -410,10 +428,11 @@ float calibratePHBuffer(float targetPH, const char* title) {
       calibration_offset += 0.1f;
       inputFlags[0] = LOW;
     }
-    // STOP = decrease offset  (emergency stop disabled during calibration)
+    // STOP = EMERGENCY STOP — abort calibration immediately
     if (inputFlags[1]) {
-      calibration_offset -= 0.1f;
       inputFlags[1] = LOW;
+      emergencyStopProcedure();
+      return -1.0f;  // Signal abort to caller
     }
     // CALIB = manual confirm / skip
     if (inputFlags[2]) {
@@ -462,6 +481,13 @@ void handleInputTargetState() {
   String input = "";
   
   while (millis() - startWait < 10000) {  // 10 second timeout
+    // Check for emergency stop while waiting for Serial input
+    setInputFlags();
+    if (inputFlags[1]) {  // STOP = emergency stop
+      inputFlags[1] = LOW;
+      emergencyStopProcedure();
+      return;
+    }
     if (Serial.available() > 0) {
       input = Serial.readStringUntil('\n');
       float parsedValue = input.toFloat();
@@ -470,6 +496,7 @@ void handleInputTargetState() {
       }
       break;
     }
+    delay(50);
   }
   
   Serial.println(targetEggshellGrams);
