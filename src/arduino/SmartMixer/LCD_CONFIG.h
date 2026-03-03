@@ -52,9 +52,17 @@ bool lcdShouldUpdate();
 // Idle screen – shown at startup and between processes
 void lcdDisplayIdle();
 
-// Calibration helper – step describes the current prompt,
+// Weight calibration helper – step describes the current prompt,
 // factor is the current calibration value
 void lcdDisplayCalibration(const char* step, float factor);
+
+// pH calibration helper – shown during interactive 2-point pH calibration.
+// title   : row-0 label (e.g. "== PH BUF 4.0 ==")
+// currentPH : live reading from sensor
+// targetPH  : known buffer value (4.0 or 7.0)
+// offset    : current calibration_offset being adjusted
+void lcdDisplayPHCalibration(const char* title, float currentPH,
+                              float targetPH, float offset);
 
 // Target input screen – show confirmed target and derived
 // vinegar quantity while waiting for user to press START

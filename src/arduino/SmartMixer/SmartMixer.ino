@@ -305,35 +305,138 @@ void handleIdleState() {
 //-----------------------------------------------------------------
 void handleCalibrationState() {
   Serial.println("\n=== CALIBRATION MODE ===");
-  Serial.println("Calibrating Load Cell...");
-  
-  // Step 1: tare
+
+  //-----------------------------------------------------------------
+  // PART 1: Load Cell Calibration
+  //-----------------------------------------------------------------
+  Serial.println("\n-- Step 1: Load Cell Calibration --");
+
   lcdDisplayCalibration("Remove weight!", 0.0);
-  Serial.println("Place empty container and press any key...");
+  Serial.println("Remove all weight, then press any serial key...");
   while (Serial.available() == 0) { delay(100); }
   Serial.read();
-  
+
   lcdDisplayCalibration("Taring scale...", 0.0);
   tareLOADCELL();
-  
-  // Step 2: place known weight
+
   lcdDisplayCalibration("Place 100g...", 0.0);
-  Serial.println("Place 100g weight and press any key...");
+  Serial.println("Place 100 g reference weight, then press any serial key...");
   while (Serial.available() == 0) { delay(100); }
   Serial.read();
-  
+
   lcdDisplayCalibration("Calibrating...", 0.0);
   calibrateLOADCELL(100.0);
-  
+
   float factor = getCalibrationFactor();
-  lcdDisplayCalibration("Done!", factor);
-  
-  Serial.println("\nCalibration Complete!");
-  Serial.print("Load Cell Factor: ");
+  lcdDisplayCalibration("Weight Done!", factor);
+
+  Serial.println("Load Cell Calibration Complete!");
+  Serial.print("  Factor: ");
   Serial.println(factor);
-  
-  delay(2000);  // show result for 2 s before returning
+  delay(2000);
+
+  //-----------------------------------------------------------------
+  // PART 2: pH Sensor 2-Point Calibration (Buffer 4 then Buffer 7)
+  // Buttons: START(+0.1 offset)  STOP(-0.1 offset)  CALIB(confirm)
+  // Auto-completes when |reading - buffer| <= 0.05
+  //-----------------------------------------------------------------
+  Serial.println("\n-- Step 2: pH Sensor 2-Point Calibration --");
+  Serial.println("  Button mapping during pH calibration:");
+  Serial.println("    START   = offset +0.1");
+  Serial.println("    STOP    = offset -0.1");
+  Serial.println("    CALIB   = confirm / skip");
+
+  // Drain stale button flags before entering interactive loops
+  inputFlags[0] = LOW;
+  inputFlags[1] = LOW;
+  inputFlags[2] = LOW;
+
+  float v4 = calibratePHBuffer(4.0f, "== PH BUF 4.0 ==");
+  float v7 = calibratePHBuffer(7.0f, "== PH BUF 7.0 ==");
+
+  // Compute proper 2-point slope + offset from the two locked voltages
+  if (abs(v7 - v4) > 0.01f) {
+    float newSlope  = (7.0f - 4.0f) / (v7 - v4);
+    float newOffset = 4.0f - newSlope * v4;
+    setPHCalibration(newSlope, newOffset);
+
+    Serial.println("pH 2-point calibration applied:");
+    Serial.print("  Slope : "); Serial.println(newSlope,  4);
+    Serial.print("  Offset: "); Serial.println(newOffset, 4);
+
+    lcdDisplayPHCalibration("pH Cal   Done!", getPHValue(), 0.0f, newOffset);
+  } else {
+    Serial.println("WARNING: Buffer voltages too similar - pH calibration skipped.");
+    lcdDisplayPHCalibration("pH Cal SKIP!  ", getPHValue(), 0.0f, calibration_offset);
+  }
+  delay(2000);
+
   currentState = STATE_IDLE;
+}
+
+//-----------------------------------------------------------------
+// HELPER: Interactive single-buffer pH calibration
+// Blocks until |currentPH - targetPH| <= 0.05  OR  CALIB pressed.
+// Returns the raw voltage locked-in at confirmation.
+//-----------------------------------------------------------------
+float calibratePHBuffer(float targetPH, const char* title) {
+  Serial.print("\n  Dip probe in pH ");
+  Serial.print(targetPH, 1);
+  Serial.println(" buffer solution.");
+  Serial.println("  START(+0.1) | STOP(-0.1) | CALIB(confirm)");
+  Serial.println("  Calibration auto-completes when reading matches buffer.");
+
+  // Drain stale button flags
+  inputFlags[0] = LOW;
+  inputFlags[1] = LOW;
+  inputFlags[2] = LOW;
+
+  bool confirmed = false;
+
+  while (!confirmed) {
+    setInputFlags();
+
+    // START = increase offset
+    if (inputFlags[0]) {
+      calibration_offset += 0.1f;
+      inputFlags[0] = LOW;
+    }
+    // STOP = decrease offset  (emergency stop disabled during calibration)
+    if (inputFlags[1]) {
+      calibration_offset -= 0.1f;
+      inputFlags[1] = LOW;
+    }
+    // CALIB = manual confirm / skip
+    if (inputFlags[2]) {
+      confirmed = true;
+      inputFlags[2] = LOW;
+    }
+
+    float ph = getPHValue();
+
+    // Refresh LCD every pass so user sees real-time reading
+    lcdDisplayPHCalibration(title, ph, targetPH, calibration_offset);
+
+    // Auto-confirm when reading is within ±0.05 of target buffer
+    if (!confirmed && fabsf(ph - targetPH) <= 0.05f) {
+      confirmed = true;
+      Serial.print("  Auto-confirmed at pH ");
+      Serial.println(ph, 2);
+    }
+
+    if (!confirmed) {
+      delay(100);
+    }
+  }
+
+  // Capture final raw voltage for 2-point computation
+  float rawV = getRawVoltage();
+  Serial.print("  Locked: V = ");
+  Serial.print(rawV, 4);
+  Serial.print("  pH = ");
+  Serial.println(getPHValue(), 2);
+  delay(500);
+  return rawV;
 }
 
 //-----------------------------------------------------------------

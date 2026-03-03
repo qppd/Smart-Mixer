@@ -1,40 +1,58 @@
 #include <Arduino.h>
 #include "PH_CONFIG.h"
 
-float calibration_value = 21.34;
+// Two-point calibration parameters.
+// slope and offset are computed/updated by the calibration routine.
+float calibration_slope  = -5.70f;
+float calibration_offset = 21.34f;
 
 void initPH() {
   pinMode(PH_PIN, INPUT);
   Serial.println("pH Sensor: Initialized!");
 }
 
-float getPHValue() {
+// ---------------------------------------------------------------
+// Returns the averaged, sorted mid-6 voltage from the pH pin.
+// Shared by both getPHValue() and the calibration routine.
+// ---------------------------------------------------------------
+float getRawVoltage() {
   int buffer_arr[10];
   int temp;
   unsigned long int avgval = 0;
 
-  for(int i=0;i<10;i++) {
-    buffer_arr[i]=analogRead(PH_PIN);
+  for (int i = 0; i < 10; i++) {
+    buffer_arr[i] = analogRead(PH_PIN);
     delay(30);
   }
 
-  // Sort the Analog values received in ascending order
-  for(int i=0;i<9;i++) {
-    for(int j=i+1;j<10;j++) {
-      if(buffer_arr[i]>buffer_arr[j]) {
-        temp=buffer_arr[i];
-        buffer_arr[i]=buffer_arr[j];
-        buffer_arr[j]=temp;
+  // Sort ascending (bubble sort)
+  for (int i = 0; i < 9; i++) {
+    for (int j = i + 1; j < 10; j++) {
+      if (buffer_arr[i] > buffer_arr[j]) {
+        temp           = buffer_arr[i];
+        buffer_arr[i]  = buffer_arr[j];
+        buffer_arr[j]  = temp;
       }
     }
   }
 
-  for(int i=2;i<8;i++) {
-    avgval+=buffer_arr[i];
+  // Average the middle 6 samples (drop 2 lowest + 2 highest)
+  for (int i = 2; i < 8; i++) {
+    avgval += buffer_arr[i];
   }
 
-  float volt=(float)avgval*5.0/1024/6;
-  float ph_act = -5.70 * volt + calibration_value;
+  return (float)avgval * 5.0f / 1024.0f / 6.0f;
+}
 
-  return ph_act;
+// ---------------------------------------------------------------
+// Apply a new slope + offset computed from 2-point calibration.
+// ---------------------------------------------------------------
+void setPHCalibration(float slope, float offset) {
+  calibration_slope  = slope;
+  calibration_offset = offset;
+}
+
+float getPHValue() {
+  float volt = getRawVoltage();
+  return calibration_slope * volt + calibration_offset;
 }

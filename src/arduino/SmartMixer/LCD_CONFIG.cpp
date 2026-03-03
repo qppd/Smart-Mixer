@@ -217,6 +217,39 @@ void lcdDisplayCalibration(const char* step, float factor) {
 }
 
 // -----------------------------------------------------------
+// pH Calibration
+// Row0: title  (e.g. "== PH BUF 4.0 ==")  – 16 chars max
+// Row1: "Buf: 4.0 pH:X.XX"  target buffer + live reading
+// Row2: "+UP  -DN  [CONF]"  button hint
+// Row3: "Offset: XX.XX   "  current offset
+// -----------------------------------------------------------
+void lcdDisplayPHCalibration(const char* title, float currentPH,
+                              float targetPH, float offset) {
+  // Row 0: title
+  char row0[17];
+  snprintf(row0, sizeof(row0), "%-16s", title);
+  lcdRow(0, row0);
+
+  // Row 1: "Buf: X.X pH:X.XX"  (5+3+4+4 = 16)
+  char tb[5], pb[6];
+  dtostrf(targetPH,  3, 1, tb);   // " 4.0" or " 7.0"
+  dtostrf(currentPH, 4, 2, pb);   // "X.XX"
+  char row1[17];
+  snprintf(row1, sizeof(row1), "Buf:%s pH:%s", tb, pb);
+  lcdRow(1, row1);
+
+  // Row 2: button legend
+  lcdRow(2, "+UP  -DN  [CONF]");
+
+  // Row 3: current offset value
+  char ob[8];
+  dtostrf(offset, 6, 2, ob);       // "XXXXXX" up to " 21.34"
+  char row3[17];
+  snprintf(row3, sizeof(row3), "Offset:%s", ob);
+  lcdRow(3, row3);
+}
+
+// -----------------------------------------------------------
 // STATE: Input Target
 // Row0: "== SET TARGET =="
 // Row1: "Egg:  50.0 g    "
